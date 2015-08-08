@@ -18,5 +18,28 @@
   "bugs": {
     "url": "https://github.com/NealRame/maze-of-shadow/issues"
   },
-  "homepage": "https://github.com/NealRame/maze-of-shadow#readme"
+  "homepage": "https://github.com/NealRame/maze-of-shadow#readme",
+  "eslintConfig": {
+    "env": {
+      "es6": true,
+      "browser": true,
+      "node": true
+    },
+    "rules": {
+      "camelcase": 0,
+      "curly": [1, "multi-line"],
+      "key-spacing": 0,
+      "new-cap": [
+        1,
+        {
+          "newIsCap": true,
+          "capIsNew": false
+        }
+      ],
+      "no-multi-spaces": 0,
+      "quotes": [1, "single" ],
+      "space-infix-ops": 0,
+      "strict": [2, "never"]
+    }
+  }
 }
