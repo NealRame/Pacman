@@ -72,41 +72,44 @@
         this.walls[direction || random_direction()] = true;
     };
 
-    function draw_cell(cell) {
-        graphics.setPen(new graphics.Pen(1));
+    function draw_cell(cell, x, y) {
+        graphics.setPen(new graphics.Pen(3));
         var dispatch = {
             north: function(open) {
                 if (!open) {
-                    var x1 = 10*this.column, y1 = 10*this.row;
-                    graphics.drawLine(x1, y1, x1 + 10, y1);
+                    var x1 = 10*cell.column, y1 = 10*cell.row;
+                    return [x + x1, y + y1, x + x1 + 10, y + y1];
                 }
             },
             east: function(open) {
                 if (!open) {
-                    var x1 = 10*this.column + 10, y1 = 10*this.row;
-                    graphics.drawLine(x1, y1, x1, y1 + 10);
+                    var x1 = 10*cell.column + 10, y1 = 10*cell.row;
+                    return [x + x1, y + y1, x + x1, y + y1 + 10];
                 }
             },
             south: function(open) {
                 if (!open) {
-                    var x1 = 10*this.column, y1 = 10*this.row + 10;
-                    graphics.drawLine(x1, y1, x1 + 10, y1);
+                    var x1 = 10*cell.column, y1 = 10*cell.row + 10;
+                    return [x + x1, y + y1, x + x1 + 10, y + y1];
                 }
             },
             west: function(open) {
                 if(!open) {
-                    var x1 = 10*this.column, y1 = 10*this.row;
-                    graphics.drawLine(x1, y1, x1, y1 + 10);
+                    var x1 = 10*cell.column, y1 = 10*cell.row;
+                    return [x + x1, y + y1, x + x1, y + y1 + 10];
                 }
             }
         };
         _.each(cell.walls, function(open, direction) {
-            dispatch[direction].call(cell, open);
+            var coordinates = dispatch[direction].call(null, open);
+            if (coordinates) {
+                graphics.drawLine.apply(null, coordinates);
+            }
         });
     }
 
-    function draw_maze_cells(cells) {
-        _.each(cells, draw_cell);
+    function draw_maze_cells(cells, x, y) {
+        _.each(cells, _.partial(draw_cell, _, x || 0, y || 0));
     }
 
     function init_random(maze) {
@@ -133,7 +136,6 @@
                 cells.push(new Cell(i, j));
             }
         }
-
         Object.defineProperty(this, 'rows', {
             enumerable: true,
             get: function() {
