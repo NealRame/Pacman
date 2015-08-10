@@ -12,14 +12,7 @@ function snap(x) {
     return Math.round(w) === w && (w % 2) === 0 ? x : Math.round(x) + 0.5;
 }
 
-function Pen(width, color) {
-    if (!_.isNumber(width)) {
-        color = width;
-        width = 1.0;
-    }
-    if (!_.isString(color)) {
-        color = '#000';
-    }
+function Pen({width = 1., color = '#000'} = {}) {
     /* eslint-disable no-underscore-dangle */
     var width_, color_;
     Object.defineProperty(this, 'width', {
@@ -51,10 +44,7 @@ function Pen(width, color) {
     /* eslint-disable no-underscore-dangle */
 }
 
-function Brush(color) {
-    if (!_.isString(color)) {
-        color = '#000';
-    }
+function Brush({color = '#000'} = {}) {
     /* eslint-disable no-underscore-dangle */
     var color_;
     Object.defineProperty(this, 'color', {

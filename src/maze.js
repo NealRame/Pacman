@@ -2,113 +2,100 @@ var _ = require('underscore');
 var functional = require('./functional');
 var graphics = require('./graphics');
 
-function random_direction() {
-    return ['north', 'east', 'south', 'west'][_.random(3)];
-}
-
 var opposite_direction = functional.dispatch(
-    function(direction) {
-        if (direction === 'north') {
-            return 'south';
-        }
-    },
-    function(direction) {
-        if (direction === 'south') {
-            return 'north';
-        }
-    },
-    function(direction) {
-        if (direction === 'east') {
-            return 'west';
-        }
-    },
-    function(direction) {
-        if (direction === 'west') {
-            return 'east';
-        }
-    }
+    direction => direction === 'north' ? 'south' : undefined,
+    direction => direction === 'south' ? 'north' : undefined,
+    direction => direction === 'east'  ? 'west'  : undefined,
+    direction => direction === 'west'  ? 'east'  : undefined
 );
 
-function Cell(i, j, walls) {
-    if (!(_.isNumber(i) && _.isNumber(j))) {
-        throw new Error('row and column are required and must be numbers');
+class Cell {
+    constructor(row, column, {north = false, east = false, south = false, west = false } = {}) {
+        Object.defineProperty(this, 'row', {
+            enumerable: true,
+            get: function() {
+                return row;
+            }
+        });
+        Object.defineProperty(this, 'column', {
+            enumerable: true,
+            get: function() {
+                return column;
+            }
+        });
+        Object.defineProperty(this, 'north', {
+            enumerable: true,
+            get: function() {
+                return north;
+            },
+            set: function(v) {
+                north = v;
+            }
+        });
+        Object.defineProperty(this, 'east', {
+            enumerable: true,
+            get: function() {
+                return east;
+            },
+            set: function(v) {
+                east = v;
+            }
+        });
+        Object.defineProperty(this, 'south', {
+            enumerable: true,
+            get: function() {
+                return south;
+            },
+            set: function(v) {
+                south = v;
+            }
+        });
+        Object.defineProperty(this, 'west', {
+            enumerable: true,
+            get: function() {
+                return west;
+            },
+            set: function(v) {
+                west = v;
+            }
+        });
     }
-    /* eslint-disable no-underscore-dangle */
-    var row_ = i;
-    var column_ = j;
-    var walls_ = _.defaults(_.clone(walls || {}), {
-        north: false,
-        east: false,
-        south: false,
-        west: false
-    });
-    Object.defineProperty(this, 'row', {
-        enumerable: true,
-        get: function() {
-            return row_;
-        }
-    });
-    Object.defineProperty(this, 'column', {
-        enumerable: true,
-        get: function() {
-            return column_;
-        }
-    });
-    Object.defineProperty(this, 'walls', {
-        enumerable: true,
-        get: function() {
-            return walls_;
-        }
-    });
-    /* eslint-enable no-underscore-dangle */
+    isOpen() {
+        return this.north || this.east || this.south || this.west;
+    }
+    open(direction) {
+        this[direction] = true;
+    }
+    close(direction) {
+        this[direction] = false;
+    }
 }
-
-Cell.prototype.isOpen = function () {
-    return _.some(_.values(this.walls));
-};
-
-Cell.prototype.open = function(direction) {
-    this.walls[direction || random_direction()] = true;
-};
 
 function draw_cell(cell, x, y) {
-    graphics.setPen(new graphics.Pen(3));
     var dispatch = {
-        north: function(open) {
-            if (!open) {
-                var x1 = 10*cell.column, y1 = 10*cell.row;
-                return [x + x1, y + y1, x + x1 + 10, y + y1];
-            }
+        north: function() {
+            var x1 = 10*cell.column, y1 = 10*cell.row;
+            return [x + x1, y + y1, x + x1 + 10, y + y1];
         },
-        east: function(open) {
-            if (!open) {
-                var x1 = 10*cell.column + 10, y1 = 10*cell.row;
-                return [x + x1, y + y1, x + x1, y + y1 + 10];
-            }
+        east: function() {
+            var x1 = 10*cell.column + 10, y1 = 10*cell.row;
+            return [x + x1, y + y1, x + x1, y + y1 + 10];
         },
-        south: function(open) {
-            if (!open) {
-                var x1 = 10*cell.column, y1 = 10*cell.row + 10;
-                return [x + x1, y + y1, x + x1 + 10, y + y1];
-            }
+        south: function() {
+            var x1 = 10*cell.column, y1 = 10*cell.row + 10;
+            return [x + x1, y + y1, x + x1 + 10, y + y1];
         },
-        west: function(open) {
-            if(!open) {
-                var x1 = 10*cell.column, y1 = 10*cell.row;
-                return [x + x1, y + y1, x + x1, y + y1 + 10];
-            }
+        west: function() {
+            var x1 = 10*cell.column, y1 = 10*cell.row;
+            return [x + x1, y + y1, x + x1, y + y1 + 10];
         }
     };
-    _.each(cell.walls, function(open, direction) {
-        var coordinates = dispatch[direction].call(null, open);
-        if (coordinates) {
-            graphics.drawLine.apply(null, coordinates);
+    graphics.setPen(new graphics.Pen(3));
+    for (let direction of ['north', 'east', 'south', 'west']) {
+        if (!cell[direction]) {
+            graphics.drawLine(...dispatch[direction]());
         }
-    });
-}
-
-function draw_maze_cells(cells, x, y) {
-    _.each(cells, _.partial(draw_cell, _, x || 0, y || 0));
+    }
 }
 
 function init_random(maze) {
@@ -128,43 +115,50 @@ function init_random(maze) {
     return maze;
 }
 
-function Maze(n, m) {
-    var cells = [];
-    for (var i = 0; i < n; ++i) {
-        for (var j = 0; j < m; ++j) {
-            cells.push(new Cell(i, j));
+class Maze {
+    constructor(rows, columns) {
+        var cells = [];
+        for (let row of functional.range(0, rows)) {
+            for (let column of functional.range(0, columns)) {
+                cells.push(new Cell(row, column));
+            }
         }
-    }
-    Object.defineProperty(this, 'rows', {
-        enumerable: true,
-        get: function() {
-            return n;
-        }
-    });
-    Object.defineProperty(this, 'columns', {
-        enumerable: true,
-        get: function() {
-            return m;
-        }
-    });
-    this.cellAt = (function(row, column) {
-        if (row >= 0 && row < this.rows && column >= 0 && column < this.columns) {
-            return cells[row*m + column];
-        }
-    }).bind(this);
-    this.draw = draw_maze_cells.bind(this, cells);
-}
 
-Maze.prototype.neighbors = function(cell) {
-    return _.filter([
-        ['north', this.cellAt(cell.row - 1, cell.column)],
-        ['east',  this.cellAt(cell.row, cell.column + 1)],
-        ['south', this.cellAt(cell.row + 1, cell.column)],
-        ['west',  this.cellAt(cell.row, cell.column - 1)]
-    ], function(elt) {
-        return functional.existy(elt[1]);
-    });
-};
+        Object.defineProperty(this, 'rows', {
+            enumerable: true,
+            get: function() {
+                return rows;
+            }
+        });
+        Object.defineProperty(this, 'columns', {
+            enumerable: true,
+            get: function() {
+                return columns;
+            }
+        });
+
+        this.cellAt = (i, j) => {
+            if (i >= 0 && i < this.rows && j >= 0 && j < this.columns) {
+                return cells[i*this.rows + j];
+            }
+        };
+        this.draw = (x, y) => {
+            for (let cell of cells) {
+                draw_cell(cell, x, y);
+            }
+        };
+    }
+    neighbors(cell) {
+        return _.filter([
+            ['north', this.cellAt(cell.row - 1, cell.column)],
+            ['east',  this.cellAt(cell.row, cell.column + 1)],
+            ['south', this.cellAt(cell.row + 1, cell.column)],
+            ['west',  this.cellAt(cell.row, cell.column - 1)]
+        ], function(elt) {
+            return functional.existy(elt[1]);
+        });
+    }
+}
 
 exports.create = function(n, m) {
     return init_random(new Maze(n, m));

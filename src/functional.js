@@ -21,7 +21,14 @@ function dispatch(...funs) {
     };
 }
 
+function *range(first, last, step = 1) {
+    for (let i = first; i < last; i += step) {
+        yield i;
+    }
+}
+
 exports.existy = existy;
 exports.cat = cat;
 exports.construct = construct;
 exports.dispatch = dispatch;
+exports.range = range;
