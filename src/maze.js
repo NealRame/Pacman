@@ -126,6 +126,16 @@ class Maze {
         random_aux(maze.cellAt(0, 0));
         return maze;
     }
+    static fromMap(map) {
+        let maze = new Maze(map[0].length, map.length);
+        for (let cell of maze) {
+            let flag = map[cell.row][cell.column];
+            cell.north = (flag & 0x01) === 0;
+            cell.east  = (flag & 0x02) === 0;
+            cell.south = (flag & 0x04) === 0;
+            cell.west  = (flag & 0x08) === 0;
+        }
+        return maze;
     }
 }
 
