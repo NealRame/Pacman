@@ -27,13 +27,17 @@ class Ghost extends(MovingEntity) {
     constructor(name, color = '#222', [x = 0, y = 0] = []) {
         super([x, y]);
         this.name = name;
+        this.dangerous = true;
         Object.defineProperty(this, 'color', {
             enumerable: true,
             get: () => color
         });
     }
     _draw(scale) {
-        let eye_direction = this.velocity.mul(1/(15*this.velocity.norm));
+        // We could have used the `Vector2D#norm` getter but `MovingEntity`
+        // compute this value when their velocity are set.
+        // Thus we avoid a standard calculates each turn.
+        let eye_direction = this.velocity.mul(1/(15*this.speed));
 
         graphics.push();
         graphics.translate({x: .1, y: .1});

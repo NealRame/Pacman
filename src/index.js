@@ -13,7 +13,7 @@ const maze_map = [
     [ 8,  5,  0,  1,  5,  4,  4,  5,  1,  0,  5,  2],
     [12,  5,  2, 12,  5,  3,  9,  5,  6,  8,  5,  6],
     [ 5,  7, 10,  9,  5,  4,  4,  5,  3, 10, 13,  5],
-    [ 5,  5,  0,  2, 13,  5,  5,  7,  8,  0,  5,  5],
+    [ 5,  5,  0,  2, 13,  4,  4,  7,  8,  0,  5,  5],
     [ 5,  7, 10,  8,  5,  5,  5,  5,  2, 10, 13,  5],
     [ 9,  5,  0,  4,  5,  3,  9,  5,  4,  0,  5,  3],
     [12,  3,  8,  1,  5,  4,  4,  5,  1,  2,  9,  6],
@@ -81,8 +81,7 @@ function move(entity) {
         dest_cell = destination_cell(current_cell, orig_cell);
         orig_cell = current_cell;
 
-        entity.velocity = dest_cell.position.sub(current_pos);
-        entity.speed = 1/50;
+        entity.velocity = dest_cell.position.sub(current_pos).unit().mul(1/50);
         destinations[entity.name] = {orig_cell, dest_cell};
     }
 
