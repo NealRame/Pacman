@@ -6,7 +6,7 @@ let Pacman = require('./pacman');
 let Resource = require('./resource');
 
 const canvas_size = graphics.size();
-const scale = 50;
+const scale = 40;
 const maze_map = [
     [ 9,  5,  1,  5,  5,  3,  9,  5,  5,  1,  5,  3],
     [10, 15, 10, 13,  7, 10, 10, 13,  7, 10, 15, 10],
@@ -70,25 +70,25 @@ function destination_cell(current, origin) {
     return _.first(candidates);
 }
 
-function move(entity) {
-    let {orig_cell, dest_cell} = destinations[entity.name];
+function move_ghost(ghost) {
+    let {orig_cell, dest_cell} = destinations[ghost.name];
 
     if (!dest_cell) {
-        let current_pos = entity.position;
+        let current_pos = ghost.position;
         let current_cell = maze.cellAt(current_pos.x, current_pos.y);
 
         dest_cell = destination_cell(current_cell, orig_cell);
         orig_cell = current_cell;
 
-        entity.velocity = dest_cell.position.sub(current_pos).unit().mul(1/50);
-        destinations[entity.name] = {orig_cell, dest_cell};
+        ghost.velocity = dest_cell.position.sub(current_pos).unit().mul(1/50);
+        destinations[ghost.name] = {orig_cell, dest_cell};
     }
 
-    if (entity.distanceFrom(dest_cell.position) > 0.01) {
-        entity.step();
+    if (ghost.distanceFrom(dest_cell.position) > 0.01) {
+        ghost.step();
     } else {
-        entity.position = dest_cell.position;
-        delete destinations[entity.name].dest_cell;
+        ghost.position = dest_cell.position;
+        delete destinations[ghost.name].dest_cell;
     }
 }
 
@@ -98,7 +98,7 @@ function run() {
         draw(entity);
     }
     for (let entity of ghosts) {
-        move(entity);
+        move_ghost(entity);
     }
     window.requestAnimationFrame(run);
 }
