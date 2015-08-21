@@ -10,8 +10,8 @@ class Resource extends Entity {
         graphics.setBrush({
             color: '#000'
         });
-        graphics.translate({x: 0.375, y: 0.375});
-        graphics.fillRect({x: 0, y: 0}, 0.25, 0.25);
+        graphics.translate({x: .45, y: .45});
+        graphics.fillRect({x: 0, y: 0}, .1, .1);
         graphics.pop();
     }
 }
