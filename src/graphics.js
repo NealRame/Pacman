@@ -1,4 +1,6 @@
 var _ = require('underscore');
+var Vector2D = require('./vector2d');
+
 var canvas = document.getElementById('graphics');
 
 if (!canvas) {
@@ -7,9 +9,12 @@ if (!canvas) {
 
 var context = canvas.getContext('2d');
 
+var snap_by_stack = [];
+var snap_by = 0.5;
+
 function snap(x) {
     var w = context.lineWidth;
-    return Math.round(w) === w && (w % 2) === 0 ? x : Math.round(x) + 0.5;
+    return Math.round(w) === w && (w % 2) === 0 ? x : Math.round(x) + snap_by;
 }
 
 function Pen({width = 1., color = '#000'} = {}) {
@@ -71,7 +76,7 @@ exports.Pen = Pen;
 exports.Brush = Brush;
 
 exports.setPen = function(pen) {
-    context.strokeStyle = pen.color;
+    context.strokeStyle = pen.color || '#000';
     context.lineWidth = pen.width;
 };
 
@@ -87,7 +92,7 @@ exports.brush = function() {
     return new Brush(context.fillStyle);
 };
 
-exports.drawLine = function(x1, y1, x2, y2) {
+exports.drawLine = function({x: x1 = 0, y: y1 = 0} = {}, {x: x2 = 0, y: y2 = 0} = {}) {
     context.beginPath();
     context.moveTo(snap(x1), snap(y1));
     context.lineTo(snap(x2), snap(y2));
@@ -95,10 +100,37 @@ exports.drawLine = function(x1, y1, x2, y2) {
     context.stroke();
 };
 
-exports.drawRect = function(x, y, w, h) {
+exports.drawRect = function({x = 0, y = 0} = {}, w = 0, h = 0) {
     context.strokeRect(snap(x), snap(y), w, h);
 };
 
-exports.fillRect = function(x, y, w, h) {
+exports.fillRect = function({x = 0, y = 0} = {}, w = 0, h = 0) {
     context.fillRect(snap(x), snap(y), w, h);
+};
+
+exports.drawPath = function(path) {
+    context.stroke(path);
+};
+
+exports.fillPath = function(path) {
+    context.fill(path);
+};
+
+exports.translate = function({x = 0, y = 0} = {}) {
+    context.translate(x, y);
+};
+
+exports.scale = function(k = 1) {
+    snap_by = snap_by/k;
+    context.scale(k, k);
+};
+
+exports.push = function() {
+    snap_by_stack.push(snap_by);
+    context.save();
+};
+
+exports.pop = function() {
+    snap_by = snap_by_stack.pop();
+    context.restore();
 };

@@ -1,6 +1,7 @@
 var _ = require('underscore');
 var functional = require('./functional');
 var graphics = require('./graphics');
+var Vector2D = require('./vector2d');
 
 var opposite_direction = functional.dispatch(
     direction => direction === 'north' ? 'south' : undefined,
@@ -10,55 +11,19 @@ var opposite_direction = functional.dispatch(
 );
 
 class Cell {
-    constructor(row, column, {north = false, east = false, south = false, west = false } = {}) {
-        Object.defineProperty(this, 'row', {
-            enumerable: true,
-            get: function() {
-                return row;
-            }
-        });
+    constructor(column, row, {north = false, east = false, south = false, west = false } = {}) {
         Object.defineProperty(this, 'column', {
             enumerable: true,
-            get: function() {
-                return column;
-            }
+            get: () => column
         });
-        Object.defineProperty(this, 'north', {
+        Object.defineProperty(this, 'row', {
             enumerable: true,
-            get: function() {
-                return north;
-            },
-            set: function(v) {
-                north = v;
-            }
+            get: () => row
         });
-        Object.defineProperty(this, 'east', {
-            enumerable: true,
-            get: function() {
-                return east;
-            },
-            set: function(v) {
-                east = v;
-            }
-        });
-        Object.defineProperty(this, 'south', {
-            enumerable: true,
-            get: function() {
-                return south;
-            },
-            set: function(v) {
-                south = v;
-            }
-        });
-        Object.defineProperty(this, 'west', {
-            enumerable: true,
-            get: function() {
-                return west;
-            },
-            set: function(v) {
-                west = v;
-            }
-        });
+        this.north = north;
+        this.east  = east;
+        this.south = south;
+        this.west  = west;
     }
     isOpen() {
         return this.north || this.east || this.south || this.west;
@@ -69,28 +34,30 @@ class Cell {
     close(direction) {
         this[direction] = false;
     }
+    get position() {
+        return new Vector2D([this.column, this.row]);
+    }
 }
 
-function draw_cell(cell, x, y) {
+function draw_cell(cell) {
     var dispatch = {
         north: function() {
-            var x1 = 10*cell.column, y1 = 10*cell.row;
-            return [x + x1, y + y1, x + x1 + 10, y + y1];
+            let p = cell.position;
+            return [p, p.add({x: 1, y: 0})];
         },
         east: function() {
-            var x1 = 10*cell.column + 10, y1 = 10*cell.row;
-            return [x + x1, y + y1, x + x1, y + y1 + 10];
+            let p = cell.position.add({x: 1, y: 0});
+            return [p, p.add({x: 0, y: 1})];
         },
         south: function() {
-            var x1 = 10*cell.column, y1 = 10*cell.row + 10;
-            return [x + x1, y + y1, x + x1 + 10, y + y1];
+            let p = cell.position.add({x: 0, y: 1});
+            return [p, p.add({x: 1, y: 0})];
         },
         west: function() {
-            var x1 = 10*cell.column, y1 = 10*cell.row;
-            return [x + x1, y + y1, x + x1, y + y1 + 10];
+            let p = cell.position;
+            return [p, p.add({x: 0, y: 1})];
         }
     };
-    graphics.setPen(new graphics.Pen(3));
     for (let direction of ['north', 'east', 'south', 'west']) {
         if (!cell[direction]) {
             graphics.drawLine(...dispatch[direction]());
@@ -100,7 +67,7 @@ function draw_cell(cell, x, y) {
 
 function init_random(maze) {
     function init_random_aux(cell) {
-        _.chain(maze.neighbors(cell))
+        _.chain(maze.neighborsOf(cell))
             .shuffle()
             .object()
             .each(function(neighbor, direction) {
@@ -116,50 +83,52 @@ function init_random(maze) {
 }
 
 class Maze {
-    constructor(rows, columns) {
+    constructor(columns, rows) {
         var cells = [];
         for (let row of functional.range(0, rows)) {
             for (let column of functional.range(0, columns)) {
-                cells.push(new Cell(row, column));
+                cells.push(new Cell(column, row));
             }
         }
-
-        Object.defineProperty(this, 'rows', {
-            enumerable: true,
-            get: function() {
-                return rows;
-            }
-        });
         Object.defineProperty(this, 'columns', {
             enumerable: true,
-            get: function() {
-                return columns;
-            }
+            get: () => columns
         });
-
-        this.cellAt = (i, j) => {
-            if (i >= 0 && i < this.rows && j >= 0 && j < this.columns) {
-                return cells[i*this.rows + j];
+        Object.defineProperty(this, 'rows', {
+            enumerable: true,
+            get: () => rows
+        });
+        this.cellAt = (column, row) => {
+            if (column >= 0 && column < this.columns && row >= 0 && row < this.rows) {
+                return cells[row*this.columns + column];
             }
         };
-        this.draw = (x, y) => {
+        this.draw = (scale = 1) => {
+            graphics.push();
+            graphics.scale(scale);
+            graphics.setPen({
+                width: 1/scale
+            });
             for (let cell of cells) {
-                draw_cell(cell, x, y);
+                draw_cell(cell);
             }
+            graphics.pop();
         };
     }
-    neighbors(cell) {
+    neighborsOf(cell) {
         return _.filter([
-            ['north', this.cellAt(cell.row - 1, cell.column)],
-            ['east',  this.cellAt(cell.row, cell.column + 1)],
-            ['south', this.cellAt(cell.row + 1, cell.column)],
-            ['west',  this.cellAt(cell.row, cell.column - 1)]
-        ], function(elt) {
-            return functional.existy(elt[1]);
-        });
+            ['north', this.cellAt(cell.column, cell.row - 1)],
+            ['east',  this.cellAt(cell.column + 1, cell.row)],
+            ['south', this.cellAt(cell.column, cell.row + 1)],
+            ['west',  this.cellAt(cell.column - 1, cell.row)]
+        ], elt => functional.existy(elt[1]));
+    }
+    reachableNeighborsOf(cell) {
+        return _.filter(this.neighborsOf(cell), elt => cell[elt[0]]);
+    }
+    static create(rows, columns) {
+        return init_random(new Maze(columns, rows));
     }
 }
 
-exports.create = function(n, m) {
-    return init_random(new Maze(n, m));
-};
+module.exports = Maze;
