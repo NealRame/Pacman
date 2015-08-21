@@ -33,6 +33,8 @@ class Ghost extends(MovingEntity) {
         });
     }
     _draw(scale) {
+        let eye_direction = this.velocity.mul(1/(15*this.velocity.norm));
+
         graphics.push();
         graphics.translate({x: .1, y: .1});
         graphics.scale(0.8);
@@ -55,7 +57,10 @@ class Ghost extends(MovingEntity) {
         graphics.setBrush({
             color: '#000'
         });
+        graphics.push();
+        graphics.translate(eye_direction);
         graphics.fillPath(inner_ghost_eye);
+        graphics.pop();
 
         graphics.translate(new Vector2D([14/32, 0]));
         graphics.setBrush({
@@ -66,7 +71,10 @@ class Ghost extends(MovingEntity) {
         graphics.setBrush({
             color: '#000'
         });
+        graphics.push();
+        graphics.translate(eye_direction);
         graphics.fillPath(inner_ghost_eye);
+        graphics.pop();
 
         graphics.pop();
     }
