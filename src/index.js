@@ -7,6 +7,7 @@ let Resource = require('./resource');
 
 const scale = 40;
 
+const canvas_size = graphics.size();
 const maze_map = [
     [ 9,  5,  1,  5,  5,  3,  9,  5,  5,  1,  5,  3],
     [10, 15, 10, 13,  7, 10, 10, 13,  7, 10, 15, 10],
@@ -20,7 +21,6 @@ const maze_map = [
     [ 9,  4,  6, 12,  5,  3,  9,  5,  6, 12,  4,  3],
     [12,  5,  5,  5,  5,  4,  4,  5,  5,  5,  5,  6]
 ];
-
 const resource_map = [
     [ 0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1],
     [ 1,  0,  1,  0,  0,  1,  1,  0,  0,  1,  0,  1],
@@ -107,5 +107,9 @@ function run() {
 for (let ghost of ghosts) {
     destinations[ghost.name] = {};
 }
-graphics.translate({x: (780 - scale*maze.columns)/2, y: (520 - scale*maze.rows)/2});
+
+graphics.translate({
+    x: (canvas_size.width - scale*maze.columns)/2,
+    y: (canvas_size.height - scale*maze.rows)/2
+});
 window.requestAnimationFrame(run);
