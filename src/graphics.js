@@ -75,6 +75,12 @@ exports.clear = function() {
 exports.Pen = Pen;
 exports.Brush = Brush;
 
+exports.size = function() {
+    return {
+        width: canvas.width, height: canvas.height
+    };
+};
+
 exports.setPen = function(pen) {
     context.strokeStyle = pen.color || '#000';
     context.lineWidth = pen.width;
