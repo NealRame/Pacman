@@ -90,7 +90,7 @@ class Maze {
             graphics.push();
             graphics.scale(scale);
             graphics.setPen({
-                width: 1/scale
+                width: 2/scale
             });
             for (let cell of cells) {
                 draw_cell(cell);
