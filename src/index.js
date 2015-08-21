@@ -6,22 +6,52 @@ let Pacman = require('./pacman');
 let Resource = require('./resource');
 
 const scale = 40;
-const row = 10;
-const column = 10;
 
-let maze = Maze.create(row, column);
-let pacman = new Pacman('pacman', [Math.floor(column/2), Math.floor(row/2)]);
+const maze_map = [
+    [ 9,  5,  1,  5,  5,  3,  9,  5,  5,  1,  5,  3],
+    [10, 15, 10, 13,  7, 10, 10, 13,  7, 10, 15, 10],
+    [ 8,  5,  0,  1,  5,  4,  4,  5,  1,  0,  5,  2],
+    [12,  5,  2, 12,  5,  3,  9,  5,  6,  8,  5,  6],
+    [ 5,  7, 10,  9,  5,  4,  4,  5,  3, 10, 13,  5],
+    [ 5,  5,  0,  2, 13,  5,  5,  7,  8,  0,  5,  5],
+    [ 5,  7, 10,  8,  5,  5,  5,  5,  2, 10, 13,  5],
+    [ 9,  5,  0,  4,  5,  3,  9,  5,  4,  0,  5,  3],
+    [12,  3,  8,  1,  5,  4,  4,  5,  1,  2,  9,  6],
+    [ 9,  4,  6, 12,  5,  3,  9,  5,  6, 12,  4,  3],
+    [12,  5,  5,  5,  5,  4,  4,  5,  5,  5,  5,  6]
+];
+
+const resource_map = [
+    [ 0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1],
+    [ 1,  0,  1,  0,  0,  1,  1,  0,  0,  1,  0,  1],
+    [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1],
+    [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1],
+    [ 0,  0,  1,  0,  0,  0,  0,  0,  0,  1,  0,  0],
+    [ 0,  0,  1,  0,  0,  0,  0,  0,  0,  1,  0,  0],
+    [ 0,  0,  1,  0,  0,  0,  0,  0,  0,  1,  0,  0],
+    [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1],
+    [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1],
+    [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1],
+    [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1]
+];
+
+let maze = Maze.fromMap(maze_map);
+let pacman = new Pacman('pacman', [0, 0]);
 let ghosts = [
-    new Ghost('blinky', '#fd0900', [0, 0]),
-    new Ghost('pinky',  '#feb8de', [0, row - 1]),
-    new Ghost('inky',   '#22ffde', [column - 1, 0]),
-    new Ghost('clyde',  '#feb846', [column - 1, row - 1])
+    new Ghost('blinky', '#fd0900', [4, 5]),
+    new Ghost('pinky',  '#feb8de', [5, 5]),
+    new Ghost('inky',   '#22ffde', [6, 5]),
+    new Ghost('clyde',  '#feb846', [7, 5])
 ];
 let resources = [];
 
-for (let i = 0; i < row; ++i) {
-    for (let j = 0; j < column; ++j) {
-        resources.push(new Resource([j, i]));
+for (let i = 0; i < resource_map.length; ++i) {
+    for (let j = 0; j < resource_map[0].length; ++j) {
+        switch (resource_map[i][j]) {
+        case 1: resources.push(new Resource([j, i])); break;
+        default:
+            break;
+        }
     }
 }
 
@@ -78,5 +108,5 @@ function run() {
 for (let ghost of ghosts) {
     destinations[ghost.name] = {};
 }
-graphics.translate({x: (780 - scale*row)/2, y: (520 - scale*column)/2});
+graphics.translate({x: (780 - scale*maze.columns)/2, y: (520 - scale*maze.rows)/2});
 window.requestAnimationFrame(run);
