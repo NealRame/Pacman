@@ -15,6 +15,10 @@ class Vector2D {
     sub(v) {
         return this.add(v.mul(-1));
     }
+    unit() {
+        let n = this.norm;
+        return n !== 0 ? this.mul(1/n) : new Vector2D();
+    }
     static fromPoint([x1, y1], [x2, y2]) {
         return new Vector2D([x2 - x1, y2 - y1]);
     }
