@@ -65,23 +65,6 @@ function draw_cell(cell) {
     }
 }
 
-function init_random(maze) {
-    function init_random_aux(cell) {
-        _.chain(maze.neighborsOf(cell))
-            .shuffle()
-            .object()
-            .each(function(neighbor, direction) {
-                if (!neighbor.isOpen()) {
-                    cell.open(direction);
-                    neighbor.open(opposite_direction(direction));
-                    init_random_aux(neighbor);
-                }
-            });
-    }
-    init_random_aux(maze.cellAt(0, 0));
-    return maze;
-}
-
 class Maze {
     constructor(columns, rows) {
         var cells = [];
@@ -126,8 +109,23 @@ class Maze {
     reachableNeighborsOf(cell) {
         return _.filter(this.neighborsOf(cell), elt => cell[elt[0]]);
     }
-    static create(rows, columns) {
-        return init_random(new Maze(columns, rows));
+    static random(columns, rows) {
+        let maze = new Maze(columns, rows);
+        function random_aux(cell) {
+            _.chain(maze.neighborsOf(cell))
+                .shuffle()
+                .object()
+                .each(function(neighbor, direction) {
+                    if (!neighbor.isOpen()) {
+                        cell.open(direction);
+                        neighbor.open(opposite_direction(direction));
+                        random_aux(neighbor);
+                    }
+                });
+        }
+        random_aux(maze.cellAt(0, 0));
+        return maze;
+    }
     }
 }
 
