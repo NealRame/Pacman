@@ -97,6 +97,11 @@ class Maze {
             }
             graphics.pop();
         };
+        this[Symbol.iterator] = function*() {
+            for (let cell of cells) {
+                yield cell;
+            }
+        };
     }
     neighborsOf(cell) {
         return _.filter([
