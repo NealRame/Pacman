@@ -5,9 +5,8 @@ let Maze = require('./maze');
 let Pacman = require('./pacman');
 let Resource = require('./resource');
 
-const scale = 40;
-
 const canvas_size = graphics.size();
+const scale = 50;
 const maze_map = [
     [ 9,  5,  1,  5,  5,  3,  9,  5,  5,  1,  5,  3],
     [10, 15, 10, 13,  7, 10, 10, 13,  7, 10, 15, 10],
