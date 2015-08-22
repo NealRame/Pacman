@@ -83,7 +83,7 @@ function move_ghost(ghost) {
         dest_cell = destination_cell(current_cell, orig_cell);
         orig_cell = current_cell;
 
-        ghost.velocity = dest_cell.position.sub(current_pos).unit().mul(1/50);
+        ghost.velocity = dest_cell.position.sub(current_pos).unit().mul(1/25);
         destinations[ghost.name] = {orig_cell, dest_cell};
     }
 
@@ -100,8 +100,8 @@ function run() {
     for (let entity of entities) {
         draw(entity);
     }
-    for (let entity of ghosts) {
-        move_ghost(entity);
+    for (let ghost of ghosts) {
+        move_ghost(ghost);
     }
     window.requestAnimationFrame(run);
 }
