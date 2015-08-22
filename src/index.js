@@ -4,6 +4,7 @@ let Ghost = require('./ghost');
 let Maze = require('./maze');
 let Pacman = require('./pacman');
 let Biscuit = require('./biscuit');
+let Pill = require('./pill');
 
 const canvas_size = graphics.size();
 const scale = 40;
@@ -22,14 +23,14 @@ const maze_map = [
 ];
 const resource_map = [
     [ 0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1],
-    [ 1,  0,  1,  0,  0,  1,  1,  0,  0,  1,  0,  1],
+    [ 2,  0,  1,  0,  0,  1,  1,  0,  0,  1,  0,  2],
     [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1],
     [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1],
     [ 0,  0,  1,  0,  0,  0,  0,  0,  0,  1,  0,  0],
     [ 0,  0,  1,  0,  0,  0,  0,  0,  0,  1,  0,  0],
     [ 0,  0,  1,  0,  0,  0,  0,  0,  0,  1,  0,  0],
     [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1],
-    [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1],
+    [ 2,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  2],
     [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1],
     [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1]
 ];
@@ -49,6 +50,7 @@ for (let i = 0; i < resource_map.length; ++i) {
     for (let j = 0; j < resource_map[0].length; ++j) {
         switch (resource_map[i][j]) {
         case 1: biscuits.push(new Biscuit([j, i])); break;
+        case 2: pills.push(new Pill([j, i])); break;
         default:
             break;
         }
