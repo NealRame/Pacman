@@ -3,11 +3,18 @@ var functional = require('./functional');
 var graphics = require('./graphics');
 var Vector2D = require('./vector2d');
 
-var opposite_direction = functional.dispatch(
-    direction => direction === 'north' ? 'south' : undefined,
-    direction => direction === 'south' ? 'north' : undefined,
-    direction => direction === 'east'  ? 'west'  : undefined,
-    direction => direction === 'west'  ? 'east'  : undefined
+let opposite_direction = functional.dispatch(
+    direction => direction === 'north' ? 'south' : null,
+    direction => direction === 'south' ? 'north' : null,
+    direction => direction === 'east'  ? 'west'  : null,
+    direction => direction === 'west'  ? 'east'  : null
+);
+
+let direction_to_vector = functional.dispatch(
+    direction => direction === 'north' ? new Vector2D([0, -1]) : null,
+    direction => direction === 'south' ? new Vector2D([0,  1]) : null,
+    direction => direction === 'east'  ? new Vector2D([1,  0]) : null,
+    direction => direction === 'west'  ? new Vector2D([0, -1]) : null
 );
 
 class Cell {
@@ -81,7 +88,7 @@ class Maze {
             enumerable: true,
             get: () => rows
         });
-        this.cellAt = (column, row) => {
+        this.cellAt = ({x: column, y: row}) => {
             if (column >= 0 && column < this.columns && row >= 0 && row < this.rows) {
                 return cells[row*this.columns + column];
             }
@@ -105,10 +112,10 @@ class Maze {
     }
     neighborsOf(cell) {
         return _.filter([
-            ['north', this.cellAt(cell.column, cell.row - 1)],
-            ['east',  this.cellAt(cell.column + 1, cell.row)],
-            ['south', this.cellAt(cell.column, cell.row + 1)],
-            ['west',  this.cellAt(cell.column - 1, cell.row)]
+            ['north', this.cellAt(cell.position.add({x:  0, y: -1}))],
+            ['east',  this.cellAt(cell.position.add({x:  1, y:  0}))],
+            ['south', this.cellAt(cell.position.add({x:  0, y:  1}))],
+            ['west',  this.cellAt(cell.position.add({x: -1, y:  0}))]
         ], elt => functional.existy(elt[1]));
     }
     reachableNeighborsOf(cell) {

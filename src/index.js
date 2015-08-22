@@ -78,7 +78,7 @@ function move_ghost(ghost) {
 
     if (!dest_cell) {
         let current_pos = ghost.position;
-        let current_cell = maze.cellAt(current_pos.x, current_pos.y);
+        let current_cell = maze.cellAt({x: current_pos.x, y: current_pos.y});
 
         dest_cell = destination_cell(current_cell, orig_cell);
         orig_cell = current_cell;
