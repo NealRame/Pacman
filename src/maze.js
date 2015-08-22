@@ -110,6 +110,11 @@ class Maze {
             }
         };
     }
+    neighbor(cell, direction) {
+        if ((direction = direction_to_vector(direction))) {
+            return this.cellAt(cell.position.add(direction));
+        }
+    }
     neighborsOf(cell) {
         return _.filter([
             ['north', this.cellAt(cell.position.add({x:  0, y: -1}))],
