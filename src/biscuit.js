@@ -1,11 +1,11 @@
 var Entity = require('./entity');
 var graphics = require('./graphics');
 
-class Resource extends Entity {
+class Biscuit extends Entity {
     constructor([x = 0, y = 0] = []) {
         super([x, y]);
     }
-    _draw(scale) {
+    _draw() {
         graphics.push();
         graphics.setBrush({
             color: '#000'
@@ -15,4 +15,4 @@ class Resource extends Entity {
         graphics.pop();
     }
 }
-module.exports = Resource;
+module.exports = Biscuit;

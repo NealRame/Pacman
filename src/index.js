@@ -3,7 +3,7 @@ let graphics = require('./graphics');
 let Ghost = require('./ghost');
 let Maze = require('./maze');
 let Pacman = require('./pacman');
-let Resource = require('./resource');
+let Biscuit = require('./biscuit');
 
 const canvas_size = graphics.size();
 const scale = 40;
@@ -42,19 +42,20 @@ let ghosts = [
     new Ghost('inky',   '#22ffde', [6, 5]),
     new Ghost('clyde',  '#feb846', [7, 5])
 ];
-let resources = [];
 
+let biscuits = [];
+let pills = [];
 for (let i = 0; i < resource_map.length; ++i) {
     for (let j = 0; j < resource_map[0].length; ++j) {
         switch (resource_map[i][j]) {
-        case 1: resources.push(new Resource([j, i])); break;
+        case 1: biscuits.push(new Biscuit([j, i])); break;
         default:
             break;
         }
     }
 }
 
-let entities = [maze, ...resources, pacman, ...ghosts];
+let entities = [maze, ...biscuits, ...pills, pacman, ...ghosts];
 
 function draw(entity) {
     entity.draw(scale);
