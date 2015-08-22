@@ -74,7 +74,7 @@ function destination_cell(current, origin) {
 }
 
 function move_ghost(ghost) {
-    let {orig_cell, dest_cell} = destinations[ghost.name];
+    let {orig_cell, dest_cell} = destinations[ghost.name] || {};
 
     if (!dest_cell) {
         let current_pos = ghost.position;
@@ -106,9 +106,6 @@ function run() {
     window.requestAnimationFrame(run);
 }
 
-for (let ghost of ghosts) {
-    destinations[ghost.name] = {};
-}
 
 graphics.translate({
     x: (canvas_size.width - scale*maze.columns)/2,
