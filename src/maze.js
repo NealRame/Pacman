@@ -115,6 +115,11 @@ class Maze {
             return this.cellAt(cell.position.add(direction));
         }
     }
+    reachableNeighbors(cell, direction) {
+        if (cell[direction]) {
+            return this.neighbor(cell, direction);
+        }
+    }
     neighborsOf(cell) {
         return _.filter([
             ['north', this.cellAt(cell.position.add({x:  0, y: -1}))],
