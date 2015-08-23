@@ -131,6 +131,18 @@ exports.scale = function(k = 1) {
     context.scale(k, k);
 };
 
+exports.mirrorH = function() {
+    context.scale(-1, 1);
+};
+
+exports.mirrorV = function() {
+    context.scale(1, -1);
+};
+
+exports.rotate = function(angle) {
+    context.rotate(angle);
+}
+
 exports.push = function() {
     snap_by_stack.push(snap_by);
     context.save();

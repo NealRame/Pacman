@@ -27,6 +27,15 @@ class Pacman extends(MovingEntity) {
         graphics.push();
         graphics.translate({x: .5, y: .5});
         graphics.scale(0.8);
+        if (this.direction.x < 0) {
+            graphics.mirrorH();
+        }
+        if (this.direction.y < 0) {
+            graphics.rotate(-Math.PI/2);
+        }
+        if (this.direction.y > 0) {
+            graphics.rotate(Math.PI/2);
+        }
         graphics.setPen({
             width: 1/scale
         });
