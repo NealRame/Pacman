@@ -19,6 +19,9 @@ class Vector2D {
         let n = this.norm;
         return n !== 0 ? this.mul(1/n) : new Vector2D();
     }
+    equal(v) {
+        return this.x === v.x && this.y === v.y;
+    }
     static fromPoint([x1, y1], [x2, y2]) {
         return new Vector2D([x2 - x1, y2 - y1]);
     }

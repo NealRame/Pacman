@@ -5,6 +5,7 @@ class MovingEntity extends Entity {
     constructor([x = 0, y = 0] = []) {
         super([x, y]);
         let velocity = new Vector2D();
+        let direction = new Vector2D();
         let speed = velocity.norm;
         Object.defineProperty(this, 'velocity', {
             enumerable: true,
@@ -12,11 +13,16 @@ class MovingEntity extends Entity {
             set: (v) => {
                 speed = v.norm;
                 velocity = v;
+                direction = speed ? velocity.mul(1/speed) : new Vector2D();
             }
         });
         Object.defineProperty(this, 'speed', {
             enumerable: true,
             get: () => speed
+        });
+        Object.defineProperty(this, 'direction', {
+            enumerable: true,
+            get: () => direction
         });
     }
     distanceFrom(p) {

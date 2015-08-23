@@ -10,11 +10,18 @@ let opposite_direction = functional.dispatch(
     direction => direction === 'west'  ? 'east'  : null
 );
 
-let direction_to_vector = functional.dispatch(
+let cardinal_direction_to_vector = functional.dispatch(
     direction => direction === 'north' ? new Vector2D([0, -1]) : null,
     direction => direction === 'south' ? new Vector2D([0,  1]) : null,
     direction => direction === 'east'  ? new Vector2D([1,  0]) : null,
     direction => direction === 'west'  ? new Vector2D([0, -1]) : null
+);
+
+let vector_to_cardinal_direction = functional.dispatch(
+    v => v.x === 0 && v.y < 0 ? 'north' : null,
+    v => v.x === 0 && v.y > 0 ? 'south' : null,
+    v => v.y === 0 && v.x < 0 ?  'west' : null,
+    v => v.y === 0 && v.x > 0 ?  'east' : null
 );
 
 class Cell {
@@ -111,12 +118,11 @@ class Maze {
         };
     }
     neighbor(cell, direction) {
-        if ((direction = direction_to_vector(direction))) {
-            return this.cellAt(cell.position.add(direction));
-        }
+        return this.cellAt(cell.position.add(direction));
     }
-    reachableNeighbors(cell, direction) {
-        if (cell[direction]) {
+    reachableNeighbor(cell, direction) {
+        let cardinal_direction = vector_to_cardinal_direction(direction);
+        if (cardinal_direction && cell[cardinal_direction]) {
             return this.neighbor(cell, direction);
         }
     }

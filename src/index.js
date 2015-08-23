@@ -1,14 +1,21 @@
 let _ = require('underscore');
-let graphics = require('./graphics');
+let Biscuit = require('./biscuit');
 let Ghost = require('./ghost');
+let graphics = require('./graphics');
 let Maze = require('./maze');
 let Pacman = require('./pacman');
-let Biscuit = require('./biscuit');
 let Pill = require('./pill');
+let Vector2D = require('./vector2d');
+let functional = require('./functional');
 
-const canvas_size = graphics.size();
-const scale = 40;
-const maze_map = [
+const KEY_LEFT = 37;
+const KEY_UP = 38;
+const KEY_RIGHT = 39;
+const KEY_DOWN = 40;
+
+const CANVAS_SIZE = graphics.size();
+const SCALE = 40;
+const MAZE_MAP = [
     [ 9,  5,  1,  5,  5,  3,  9,  5,  5,  1,  5,  3],
     [10, 15, 10, 13,  7, 10, 10, 13,  7, 10, 15, 10],
     [ 8,  5,  0,  1,  5,  4,  4,  5,  1,  0,  5,  2],
@@ -21,7 +28,7 @@ const maze_map = [
     [ 9,  4,  6, 12,  5,  3,  9,  5,  6, 12,  4,  3],
     [12,  5,  5,  5,  5,  4,  4,  5,  5,  5,  5,  6]
 ];
-const resource_map = [
+const RESOURCE_MAP = [
     [ 0,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1],
     [ 2,  0,  1,  0,  0,  1,  1,  0,  0,  1,  0,  2],
     [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1],
@@ -34,8 +41,9 @@ const resource_map = [
     [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1],
     [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1]
 ];
+const ENTITY_SPEED = 1/20;
 
-let maze = Maze.fromMap(maze_map);
+let maze = Maze.fromMap(MAZE_MAP);
 let pacman = new Pacman('pacman', [0, 0]);
 let ghosts = [
     new Ghost('blinky', '#fd0900', [4, 5]),
@@ -43,12 +51,12 @@ let ghosts = [
     new Ghost('inky',   '#22ffde', [6, 5]),
     new Ghost('clyde',  '#feb846', [7, 5])
 ];
-
 let biscuits = [];
 let pills = [];
-for (let i = 0; i < resource_map.length; ++i) {
-    for (let j = 0; j < resource_map[0].length; ++j) {
-        switch (resource_map[i][j]) {
+
+for (let i = 0; i < RESOURCE_MAP.length; ++i) {
+    for (let j = 0; j < RESOURCE_MAP[0].length; ++j) {
+        switch (RESOURCE_MAP[i][j]) {
         case 1: biscuits.push(new Biscuit([j, i])); break;
         case 2: pills.push(new Pill([j, i])); break;
         default:
@@ -58,14 +66,16 @@ for (let i = 0; i < resource_map.length; ++i) {
 }
 
 let entities = [maze, ...biscuits, ...pills, pacman, ...ghosts];
+let move_map = {};
 
-function draw(entity) {
-    entity.draw(scale);
+function position_to_cell(pos) {
+    return  maze.cellAt({
+        x: Math.floor(pos.x),
+        y: Math.floor(pos.y)
+    });
 }
 
-let destinations = {};
-
-function destination_cell(current, origin) {
+function ghost_next_cell(current, origin) {
     let candidates = _.chain(maze.reachableNeighborsOf(current)).shuffle().pluck(1).value();
     if (candidates.length > 1) {
         return _.find(candidates, cell => cell !== origin);
@@ -74,25 +84,75 @@ function destination_cell(current, origin) {
 }
 
 function move_ghost(ghost) {
-    let {orig_cell, dest_cell} = destinations[ghost.name] || {};
+    let {orig_cell, dest_cell} = move_map[ghost.name] || {};
 
     if (!dest_cell) {
         let current_pos = ghost.position;
-        let current_cell = maze.cellAt({x: current_pos.x, y: current_pos.y});
+        let current_cell = position_to_cell(current_pos);
 
-        dest_cell = destination_cell(current_cell, orig_cell);
+        dest_cell = ghost_next_cell(current_cell, orig_cell);
         orig_cell = current_cell;
 
-        ghost.velocity = dest_cell.position.sub(current_pos).unit().mul(1/25);
-        destinations[ghost.name] = {orig_cell, dest_cell};
+        ghost.velocity = dest_cell.position.sub(current_pos).unit().mul(ENTITY_SPEED);
+        move_map[ghost.name] = {orig_cell, dest_cell};
     }
 
     if (ghost.distanceFrom(dest_cell.position) > 0.01) {
         ghost.step();
     } else {
         ghost.position = dest_cell.position;
-        delete destinations[ghost.name].dest_cell;
+        delete move_map[ghost.name].dest_cell;
     }
+}
+
+function pacman_next_cell(current_cell, direction) {
+    return maze.reachableNeighbor(current_cell, direction)
+        || maze.reachableNeighbor(current_cell, pacman.direction);
+}
+
+function move_pacman() {
+    let {dest_cell, direction = new Vector2D()} = move_map.pacman || {};
+
+    if (!dest_cell) {
+        let current_pos = pacman.position;
+        let current_cell = position_to_cell(current_pos);
+
+        if ((dest_cell = pacman_next_cell(current_cell, direction))) {
+            pacman.velocity = dest_cell.position.sub(current_pos).unit().mul(ENTITY_SPEED);
+            move_map.pacman = {dest_cell, direction};
+        }
+    }
+
+    if (dest_cell) {
+        if (pacman.distanceFrom(dest_cell.position) > .01) {
+            pacman.step();
+        } else {
+            pacman.position = dest_cell.position;
+            delete move_map.pacman.dest_cell;
+        }
+    }
+}
+
+let key_to_direction = functional.dispatch(
+    ev => ev.keyCode === KEY_LEFT ?  new Vector2D([-1,  0]) : null,
+    ev => ev.keyCode === KEY_RIGHT ? new Vector2D([ 1,  0]) : null,
+    ev => ev.keyCode === KEY_UP ?    new Vector2D([ 0, -1]) : null,
+    ev => ev.keyCode === KEY_DOWN ?  new Vector2D([ 0,  1]) : null
+);
+
+function key_down(ev) {
+    let direction = key_to_direction(ev);
+    if (direction) {
+        move_map.pacman = move_map.pacman || {};
+        move_map.pacman.direction = direction;
+        if (direction.equal(pacman.direction.mul(-1))) {
+            delete move_map.pacman.dest_cell;
+        }
+    }
+}
+
+function draw(entity) {
+    entity.draw(SCALE);
 }
 
 function run() {
@@ -103,12 +163,14 @@ function run() {
     for (let ghost of ghosts) {
         move_ghost(ghost);
     }
+    move_pacman();
     window.requestAnimationFrame(run);
 }
 
+document.addEventListener('keydown', key_down, true);
 
 graphics.translate({
-    x: (canvas_size.width - scale*maze.columns)/2,
-    y: (canvas_size.height - scale*maze.rows)/2
+    x: (CANVAS_SIZE.width - SCALE*maze.columns)/2,
+    y: (CANVAS_SIZE.height - SCALE*maze.rows)/2
 });
 window.requestAnimationFrame(run);
