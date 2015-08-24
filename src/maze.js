@@ -3,23 +3,23 @@ var functional = require('./functional');
 var graphics = require('./graphics');
 var Vector2D = require('./vector2d');
 
-let opposite_direction = functional.dispatch(
-    direction => direction === 'north' ? 'south' : null,
-    direction => direction === 'south' ? 'north' : null,
-    direction => direction === 'east'  ? 'west'  : null,
-    direction => direction === 'west'  ? 'east'  : null
-);
-let cardinal_direction_to_vector = functional.dispatch(
-    direction => direction === 'north' ? new Vector2D([0, -1]) : null,
-    direction => direction === 'south' ? new Vector2D([0,  1]) : null,
-    direction => direction === 'east'  ? new Vector2D([1,  0]) : null,
-    direction => direction === 'west'  ? new Vector2D([0, -1]) : null
-);
+// let cardinal_direction_to_vector = functional.dispatch(
+//     direction => direction === 'north' ? new Vector2D([0, -1]) : null,
+//     direction => direction === 'south' ? new Vector2D([0,  1]) : null,
+//     direction => direction === 'east'  ? new Vector2D([1,  0]) : null,
+//     direction => direction === 'west'  ? new Vector2D([0, -1]) : null
+// );
 let vector_to_cardinal_direction = functional.dispatch(
     v => v.x === 0 && v.y < 0 ? 'north' : null,
     v => v.x === 0 && v.y > 0 ? 'south' : null,
     v => v.y === 0 && v.x < 0 ?  'west' : null,
     v => v.y === 0 && v.x > 0 ?  'east' : null
+);
+let opposed_cardinal_direction = functional.dispatch(
+    direction => direction === 'north' ? 'south' : null,
+    direction => direction === 'south' ? 'north' : null,
+    direction => direction === 'east'  ? 'west'  : null,
+    direction => direction === 'west'  ? 'east'  : null
 );
 
 class Cell {
@@ -144,7 +144,7 @@ class Maze {
                 .each(function(neighbor, direction) {
                     if (!neighbor.isOpen()) {
                         cell.open(direction);
-                        neighbor.open(opposite_direction(direction));
+                        neighbor.open(opposed_cardinal_direction(direction));
                         random_aux(neighbor);
                     }
                 });
