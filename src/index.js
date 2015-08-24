@@ -120,6 +120,8 @@ function move_pacman() {
         if ((dest_cell = pacman_next_cell(current_cell, direction))) {
             pacman.velocity = dest_cell.position.sub(current_pos).unit().mul(ENTITY_SPEED);
             move_map.pacman = {dest_cell, direction};
+        } else {
+            pacman.velocity = new Vector2D();
         }
     }
 
