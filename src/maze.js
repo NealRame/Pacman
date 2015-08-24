@@ -9,14 +9,12 @@ let opposite_direction = functional.dispatch(
     direction => direction === 'east'  ? 'west'  : null,
     direction => direction === 'west'  ? 'east'  : null
 );
-
 let cardinal_direction_to_vector = functional.dispatch(
     direction => direction === 'north' ? new Vector2D([0, -1]) : null,
     direction => direction === 'south' ? new Vector2D([0,  1]) : null,
     direction => direction === 'east'  ? new Vector2D([1,  0]) : null,
     direction => direction === 'west'  ? new Vector2D([0, -1]) : null
 );
-
 let vector_to_cardinal_direction = functional.dispatch(
     v => v.x === 0 && v.y < 0 ? 'north' : null,
     v => v.x === 0 && v.y > 0 ? 'south' : null,
