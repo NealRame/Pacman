@@ -59,7 +59,7 @@ class Ghost extends(MovingEntity) {
             width: 1/scale
         });
         graphics.setBrush({
-            color: this.color
+            color: this.eatable ? '#0000bb' : this.color
         });
         graphics.fillPath(ghost);
         graphics.drawPath(ghost);

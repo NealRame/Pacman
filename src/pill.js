@@ -13,12 +13,14 @@ class Pill extends Entity {
         });
     }
     _draw() {
-        graphics.push();
-        graphics.setBrush({
-            color: '#000'
-        });
-        graphics.fillPath(path);
-        graphics.pop();
+        if (!this.eaten) {
+            graphics.push();
+            graphics.setBrush({
+                color: '#000'
+            });
+            graphics.fillPath(path);
+            graphics.pop();
+        }
     }
 }
 module.exports = Pill;
