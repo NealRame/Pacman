@@ -4,6 +4,10 @@ var graphics = require('./graphics');
 class Biscuit extends Entity {
     constructor([x = 0, y = 0] = []) {
         super([x, y]);
+        Object.defineProperty(this, 'points', {
+            enumerable: true,
+            get: () => 10
+        });
     }
     _draw() {
         graphics.push();

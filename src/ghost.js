@@ -32,6 +32,9 @@ class Ghost extends(MovingEntity) {
             enumerable: true,
             get: () => color
         });
+        Object.defineProperty(this, 'points', {
+            enumerable: true,
+            get: () => 200
     }
     _draw(scale) {
         // We could have used the `Vector2D#norm` getter but `MovingEntity`
