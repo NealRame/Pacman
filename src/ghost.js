@@ -26,7 +26,7 @@ inner_ghost_eye.arc(0, 0, 1/14, 0, Math.PI*2);
 class Ghost extends(MovingEntity) {
     constructor(name, color = '#222', [x = 0, y = 0] = []) {
         super([x, y]);
-        this.dangerous = true;
+        let eatable = false;
         Object.defineProperty(this, 'name', {
           enumerable: true,
           get: () => name
@@ -38,6 +38,12 @@ class Ghost extends(MovingEntity) {
         Object.defineProperty(this, 'points', {
             enumerable: true,
             get: () => 200
+        });
+        Object.defineProperty(this, 'eatable', {
+            enumerable: true,
+            get: () => !this.eaten && eatable,
+            set: b => eatable = b
+        });
     }
     _draw(scale) {
         // We could have used the `Vector2D#norm` getter but `MovingEntity`
