@@ -1,9 +1,12 @@
+var EventEmitter = require('events').EventEmitter;
 var graphics = require('./graphics');
 var Vector2D = require('./vector2d');
 
-class Entity {
+class Entity extends EventEmitter {
     constructor([x = 0, y = 0] = []) {
-        var pos = new Vector2D([x, y]);
+        super();
+        let pos = new Vector2D([x, y]);
+        let eaten = false;
         Object.defineProperty(this, 'x', {
             enumerable: true,
             get: () => pos.x,
@@ -18,6 +21,14 @@ class Entity {
             enumerable: true,
             get: () => pos,
             set: (p) => pos = p
+        });
+        Object.defineProperty(this, 'eaten', {
+            enumerable: true,
+            get: () => eaten,
+            set: (b) => {
+                eaten = b;
+                this.emit('eaten', this, b);
+            }
         });
     }
     draw(scale = 1) {
