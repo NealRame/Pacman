@@ -14,6 +14,7 @@ const KEY_RIGHT = 39;
 const KEY_DOWN = 40;
 const CANVAS_SIZE = graphics.size();
 const SCALE = 40;
+const GHOST_EATABLE_TIMEOUT = 8000;
 const MAZE_MAP = [
     [ 9,  5,  1,  5,  5,  3,  9,  5,  5,  1,  5,  3],
     [10, 15, 10, 13,  7, 10, 10, 13,  7, 10, 15, 10],
@@ -42,6 +43,8 @@ const RESOURCE_MAP = [
 ];
 const ENTITY_SPEED = 1/20;
 
+let score = 0;
+
 let maze = Maze.fromMap(MAZE_MAP);
 let pacman = new Pacman('pacman', [0, 0]);
 let ghosts = [
@@ -50,22 +53,47 @@ let ghosts = [
     new Ghost('inky',   '#22ffde', [6, 5]),
     new Ghost('clyde',  '#feb846', [7, 5])
 ];
-let biscuits = [];
-let pills = [];
+let resources = [];
 
 for (let i = 0; i < RESOURCE_MAP.length; ++i) {
     for (let j = 0; j < RESOURCE_MAP[0].length; ++j) {
+        let resource;
         switch (RESOURCE_MAP[i][j]) {
-        case 1: biscuits.push(new Biscuit([j, i])); break;
-        case 2: pills.push(new Pill([j, i])); break;
+        case 1:
+            resource = new Biscuit([j, i]);
+            break;
+        case 2:
+            resource = new Pill([j, i]);
+            resource.on('eaten', on_pill_eaten);
+            break;
         default:
             break;
+        }
+        if (resource) {
+            resource.on('eaten', on_resource_eaten);
+            resources.push(resource);
         }
     }
 }
 
-let entities = [maze, ...biscuits, ...pills, pacman, ...ghosts];
+let entities = [maze, ...resources, pacman, ...ghosts];
 let move_map = {};
+
+function on_resource_eaten(resource) {
+    score += resource.point;
+}
+
+function set_ghost_eatable(ghost, eatable) {
+    ghost.eatable = eatable;
+    ghost.velocity = ghost.velocity.mul(ghost.eatable ? 1/2 : 2);
+}
+
+function on_pill_eaten() {
+    for (let ghost of ghosts) {
+        set_ghost_eatable(ghost, true);
+        setTimeout(set_ghost_eatable.bind(null, ghost, false), GHOST_EATABLE_TIMEOUT);
+    }
+}
 
 function position_to_cell(pos) {
     return  maze.cellAt({
@@ -88,15 +116,16 @@ function move_ghost(ghost) {
     if (!dest_cell) {
         let current_pos = ghost.position;
         let current_cell = position_to_cell(current_pos);
+        let speed = ghost.eatable ? ENTITY_SPEED/2 : ENTITY_SPEED;
 
         dest_cell = ghost_next_cell(current_cell, orig_cell);
         orig_cell = current_cell;
 
-        ghost.velocity = dest_cell.position.sub(current_pos).unit().mul(ENTITY_SPEED);
+        ghost.velocity = dest_cell.position.sub(current_pos).unit().mul(speed);
         move_map[ghost.name] = {orig_cell, dest_cell};
     }
 
-    if (ghost.distanceFrom(dest_cell.position) > 0.01) {
+    if (ghost.distanceFrom(dest_cell.position) > ghost.speed) {
         ghost.step();
     } else {
         ghost.position = dest_cell.position;
@@ -163,6 +192,12 @@ function run() {
     }
     for (let ghost of ghosts) {
         move_ghost(ghost);
+    }
+    let pos = pacman.position;
+    for (let resource of resources) {
+        if (!resource.eaten && pos.equal(resource.position)) {
+            resource.eaten = true;
+        }
     }
     move_pacman();
     window.requestAnimationFrame(run);
