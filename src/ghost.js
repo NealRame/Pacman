@@ -26,8 +26,11 @@ inner_ghost_eye.arc(0, 0, 1/14, 0, Math.PI*2);
 class Ghost extends(MovingEntity) {
     constructor(name, color = '#222', [x = 0, y = 0] = []) {
         super([x, y]);
-        this.name = name;
         this.dangerous = true;
+        Object.defineProperty(this, 'name', {
+          enumerable: true,
+          get: () => name
+        });
         Object.defineProperty(this, 'color', {
             enumerable: true,
             get: () => color
