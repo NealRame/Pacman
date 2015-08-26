@@ -43,6 +43,29 @@ const RESOURCE_MAP = [
 ];
 const ENTITY_SPEED = 1/20;
 
+function *resource_generator(map) {
+    for (let i = 0; i < map.length; ++i) {
+        for (let j = 0; j < map[i].length; ++j) {
+            let resource;
+            switch (RESOURCE_MAP[i][j]) {
+                case 1:
+                    resource = new Biscuit([j, i]);
+                    break;
+                case 2:
+                    resource = new Pill([j, i]);
+                    resource.on('eaten', on_pill_eaten);
+                    break;
+                default:
+                    break;
+            }
+            if (resource) {
+                resource.on('eaten', on_resource_eaten);
+                yield resource;
+            }
+        }
+    }
+}
+
 let score = 0;
 
 let maze = Maze.fromMap(MAZE_MAP);
@@ -53,29 +76,7 @@ let ghosts = [
     new Ghost('inky',   '#22ffde', [6, 5]),
     new Ghost('clyde',  '#feb846', [7, 5])
 ];
-let resources = [];
-
-for (let i = 0; i < RESOURCE_MAP.length; ++i) {
-    for (let j = 0; j < RESOURCE_MAP[0].length; ++j) {
-        let resource;
-        switch (RESOURCE_MAP[i][j]) {
-        case 1:
-            resource = new Biscuit([j, i]);
-            break;
-        case 2:
-            resource = new Pill([j, i]);
-            resource.on('eaten', on_pill_eaten);
-            break;
-        default:
-            break;
-        }
-        if (resource) {
-            resource.on('eaten', on_resource_eaten);
-            resources.push(resource);
-        }
-    }
-}
-
+let [...resources] = resource_generator(RESOURCE_MAP);
 let entities = [maze, ...resources, pacman, ...ghosts];
 let move_map = {};
 
