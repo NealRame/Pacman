@@ -154,7 +154,7 @@ function move_pacman() {
     }
 
     if (dest_cell) {
-        if (pacman.distanceFrom(dest_cell.position) > .01) {
+        if (pacman.distanceFrom(dest_cell.position) > pacman.speed) {
             pacman.step();
         } else {
             pacman.position = dest_cell.position;
