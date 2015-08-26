@@ -174,6 +174,8 @@ let key_to_direction = functional.dispatch(
 function key_down(ev) {
     let direction = key_to_direction(ev);
     if (direction) {
+        ev.preventDefault();
+        ev.stopPropagation();
         move_map.pacman = move_map.pacman || {};
         move_map.pacman.direction = direction;
         if (direction.equal(pacman.direction.mul(-1))) {
