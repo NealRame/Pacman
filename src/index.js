@@ -41,6 +41,12 @@ const RESOURCE_MAP = [
     [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1],
     [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1]
 ];
+const GHOST_MAP = [
+    ['blinky', '#fd0900', [4, 5]],
+    ['pinky',  '#feb8de', [5, 5]],
+    ['inky',   '#22ffde', [6, 5]],
+    ['clyde',  '#feb846', [7, 5]]
+];
 const ENTITY_SPEED = 1/20;
 
 function *resource_generator(map) {
@@ -66,22 +72,40 @@ function *resource_generator(map) {
     }
 }
 
-let score = 0;
+function *ghost_generator(map) {
+    for (let data of map) {
+        let ghost = new Ghost(...data);
+        ghost.on('eaten', on_ghost_eaten);
+        yield ghost;
+    }
+}
 
+let score = 0;
+let ghost_points_coefficient = 0;
 let maze = Maze.fromMap(MAZE_MAP);
 let pacman = new Pacman('pacman', [0, 0]);
-let ghosts = [
-    new Ghost('blinky', '#fd0900', [4, 5]),
-    new Ghost('pinky',  '#feb8de', [5, 5]),
-    new Ghost('inky',   '#22ffde', [6, 5]),
-    new Ghost('clyde',  '#feb846', [7, 5])
-];
+let [...ghosts] = ghost_generator(GHOST_MAP);
 let [...resources] = resource_generator(RESOURCE_MAP);
 let entities = [maze, ...resources, pacman, ...ghosts];
 let move_map = {};
+let eatable_timer_id;
+
+function on_ghost_eaten(ghost) {
+    ghost_points_coefficient += 1;
+    score += ghost_points_coefficient*ghost.points;
+    console.log(ghost.name, score);
+
+    let current_pos = ghost.position;
+    let dest_cell = maze.cellAt({x: 4, y: 5});
+
+    ghost.eatable = false;
+    ghost.velocity = dest_cell.position.sub(current_pos).unit().mul(ENTITY_SPEED*2);
+    move_map[ghost.name] = {dest_cell};
+}
 
 function on_resource_eaten(resource) {
-    score += resource.point;
+    score += resource.points;
+    console.log('score', score);
 }
 
 function set_ghost_eatable(ghost, eatable) {
@@ -89,11 +113,22 @@ function set_ghost_eatable(ghost, eatable) {
     ghost.velocity = ghost.velocity.mul(ghost.eatable ? 1/2 : 2);
 }
 
+function on_pill_timeout() {
+    for (let ghost of ghosts) {
+        set_ghost_eatable(ghost, false);
+    }
+}
+
 function on_pill_eaten() {
+    ghost_points_coefficient = 0;
     for (let ghost of ghosts) {
         set_ghost_eatable(ghost, true);
-        setTimeout(set_ghost_eatable.bind(null, ghost, false), GHOST_EATABLE_TIMEOUT);
     }
+    if (eatable_timer_id) {
+        clearTimeout(eatable_timer_id);
+        eatable_timer_id = null;
+    }
+    eatable_timer_id = setTimeout(on_pill_timeout, GHOST_EATABLE_TIMEOUT);
 }
 
 function position_to_cell(pos) {
@@ -103,12 +138,15 @@ function position_to_cell(pos) {
     });
 }
 
-function ghost_next_cell(current, origin) {
+function ghost_next_cell(ghost, current, origin) {
+    let next_cell;
     let candidates = _.chain(maze.reachableNeighborsOf(current)).shuffle().pluck(1).value();
     if (candidates.length > 1) {
-        return _.find(candidates, cell => cell !== origin);
+        next_cell = _.find(candidates, cell => cell !== origin);
+    } else {
+        next_cell = _.first(candidates);
     }
-    return _.first(candidates);
+    return next_cell;
 }
 
 function move_ghost(ghost) {
@@ -119,9 +157,10 @@ function move_ghost(ghost) {
         let current_cell = position_to_cell(current_pos);
         let speed = ghost.eatable ? ENTITY_SPEED/2 : ENTITY_SPEED;
 
-        dest_cell = ghost_next_cell(current_cell, orig_cell);
+        dest_cell = ghost_next_cell(ghost, current_cell, orig_cell);
         orig_cell = current_cell;
 
+        ghost.eaten = false;
         ghost.velocity = dest_cell.position.sub(current_pos).unit().mul(speed);
         move_map[ghost.name] = {orig_cell, dest_cell};
     }
@@ -200,6 +239,16 @@ function run() {
     for (let resource of resources) {
         if (!resource.eaten && pos.equal(resource.position)) {
             resource.eaten = true;
+        }
+    }
+    for (let ghost of ghosts) {
+        if (pacman.distanceFrom(ghost.position) < .5) {
+            if (ghost.eatable) {
+                ghost.eaten = true;
+            } else {
+                pacman.eaten = true;
+                // TODO PACMAN IS DEAD!
+            }
         }
     }
     move_pacman();
