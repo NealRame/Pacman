@@ -58,11 +58,14 @@ class Ghost extends(MovingEntity) {
         graphics.setPen({
             width: 1/scale
         });
-        graphics.setBrush({
-            color: this.eatable ? '#0000bb' : this.color
-        });
-        graphics.fillPath(ghost);
-        graphics.drawPath(ghost);
+
+        if (!this.eaten) {
+            graphics.setBrush({
+                color: this.eatable ? '#0000bb' : this.color
+            });
+            graphics.fillPath(ghost);
+            graphics.drawPath(ghost);
+        }
 
         graphics.translate(new Vector2D([9/32, 13/32]));
         graphics.setBrush({
