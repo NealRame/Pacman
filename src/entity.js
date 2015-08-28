@@ -26,8 +26,9 @@ class Entity extends EventEmitter {
             enumerable: true,
             get: () => eaten,
             set: (b) => {
-                eaten = b;
-                this.emit('eaten', this, b);
+                if ((eaten = b)) {
+                    this.emit('eaten', this);
+                }
             }
         });
     }
