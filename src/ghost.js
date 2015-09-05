@@ -1,9 +1,13 @@
+var scheduler = require('./scheduler');
 var graphics = require('./graphics');
 
 var MovingEntity = require('./moving-entity');
 var Vector2D = require('./vector2d');
 
-var ghost = new Path2D(`
+const GHOST_EATABLE_TIMEOUT = 8000;
+const GHOST_EATABLE_COLOR_1 = '#0000bb';
+const GHOST_EATABLE_COLOR_2 = '#aaa';
+const GHOST_BODY = new Path2D(`
     M 0 1
     V .3333
     C 0 .0833, .3333 0, .5 0
@@ -16,24 +20,28 @@ var ghost = new Path2D(`
     L .1666 .7777
     L 0 1
 `);
-
-var outer_ghost_eye = new Path2D();
-outer_ghost_eye.arc(0, 0,  1/7, 0, Math.PI*2);
-
-var inner_ghost_eye = new Path2D();
-inner_ghost_eye.arc(0, 0, 1/14, 0, Math.PI*2);
+const OUTER_GHOST_EYE = new Path2D(`
+    M .142 0
+    A .142 .142 0 1 1 .142 -0.0001
+`);
+const INNER_GHOST_EYE = new Path2D(`
+    M .071 0
+    A .071 .071 0 1 1 .071 -0.0001
+`);
 
 class Ghost extends(MovingEntity) {
     constructor(name, color = '#222', [x = 0, y = 0] = []) {
         super([x, y]);
-        let eatable = false;
+        let _color = color;   // eslint-disable-line no-underscore-dangle
+        let _eatable = false; // eslint-disable-line no-underscore-dangle
+        let _task_id = null;  // eslint-disable-line no-underscore-dangle
         Object.defineProperty(this, 'name', {
           enumerable: true,
           get: () => name
         });
         Object.defineProperty(this, 'color', {
             enumerable: true,
-            get: () => color
+            get: () => _color
         });
         Object.defineProperty(this, 'points', {
             enumerable: true,
@@ -41,8 +49,28 @@ class Ghost extends(MovingEntity) {
         });
         Object.defineProperty(this, 'eatable', {
             enumerable: true,
-            get: () => !this.eaten && eatable,
-            set: b => eatable = b
+            get: () => !this.eaten && _eatable,
+            set: eatable => {
+                if (_task_id) {
+                    scheduler.cancel(_task_id);
+                    _task_id = null;
+                }
+                if ((_eatable = eatable)) {
+                    _color = GHOST_EATABLE_COLOR_1;
+                    _task_id = scheduler.begin()
+                        .delay(3*GHOST_EATABLE_TIMEOUT/4,  () => _color = GHOST_EATABLE_COLOR_2)
+                        .delay(5*GHOST_EATABLE_TIMEOUT/80, () => _color = GHOST_EATABLE_COLOR_1)
+                        .delay(5*GHOST_EATABLE_TIMEOUT/80, () => _color = GHOST_EATABLE_COLOR_2)
+                        .delay(5*GHOST_EATABLE_TIMEOUT/80, () => _color = GHOST_EATABLE_COLOR_1)
+                        .delay(5*GHOST_EATABLE_TIMEOUT/80, () => {
+                            _color = color;
+                            _eatable = false;
+                        })
+                        .end();
+                } else {
+                    _color = color;
+                }
+            }
         });
     }
     _draw(scale) {
@@ -61,38 +89,38 @@ class Ghost extends(MovingEntity) {
 
         if (!this.eaten) {
             graphics.setBrush({
-                color: this.eatable ? '#0000bb' : this.color
+                color: this.color
             });
-            graphics.fillPath(ghost);
-            graphics.drawPath(ghost);
+            graphics.fillPath(GHOST_BODY);
+            graphics.drawPath(GHOST_BODY);
         }
 
         graphics.translate(new Vector2D([9/32, 13/32]));
         graphics.setBrush({
             color: '#fff'
         });
-        graphics.fillPath(outer_ghost_eye);
-        graphics.drawPath(outer_ghost_eye);
+        graphics.fillPath(OUTER_GHOST_EYE);
+        graphics.drawPath(OUTER_GHOST_EYE);
         graphics.setBrush({
             color: '#000'
         });
         graphics.push();
         graphics.translate(eye_direction);
-        graphics.fillPath(inner_ghost_eye);
+        graphics.fillPath(INNER_GHOST_EYE);
         graphics.pop();
 
         graphics.translate(new Vector2D([14/32, 0]));
         graphics.setBrush({
             color: '#fff'
         });
-        graphics.fillPath(outer_ghost_eye);
-        graphics.drawPath(outer_ghost_eye);
+        graphics.fillPath(OUTER_GHOST_EYE);
+        graphics.drawPath(OUTER_GHOST_EYE);
         graphics.setBrush({
             color: '#000'
         });
         graphics.push();
         graphics.translate(eye_direction);
-        graphics.fillPath(inner_ghost_eye);
+        graphics.fillPath(INNER_GHOST_EYE);
         graphics.pop();
 
         graphics.pop();

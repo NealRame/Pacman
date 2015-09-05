@@ -1,5 +1,6 @@
 let _ = require('underscore');
 let Biscuit = require('./biscuit');
+var scheduler = require('./scheduler');
 let Ghost = require('./ghost');
 let graphics = require('./graphics');
 let Maze = require('./maze');
@@ -14,7 +15,6 @@ const KEY_RIGHT = 39;
 const KEY_DOWN = 40;
 const CANVAS_SIZE = graphics.size();
 const SCALE = 40;
-const GHOST_EATABLE_TIMEOUT = 8000;
 const MAZE_MAP = [
     [ 9,  5,  1,  5,  5,  3,  9,  5,  5,  1,  5,  3],
     [10, 15, 10, 13,  7, 10, 10, 13,  7, 10, 15, 10],
@@ -80,7 +80,7 @@ function *ghost_generator(map) {
     }
 }
 
-let score = 0;
+let game_score = 0;
 let ghost_points_coefficient = 0;
 let maze = Maze.fromMap(MAZE_MAP);
 let pacman = new Pacman('pacman', [0, 0]);
@@ -88,12 +88,11 @@ let [...ghosts] = ghost_generator(GHOST_MAP);
 let [...resources] = resource_generator(RESOURCE_MAP);
 let entities = [maze, ...resources, pacman, ...ghosts];
 let move_map = {};
-let eatable_timer_id;
 
 function on_ghost_eaten(ghost) {
     ghost_points_coefficient += 1;
-    score += ghost_points_coefficient*ghost.points;
-    console.log(ghost.name, score);
+    game_score += ghost_points_coefficient*ghost.points;
+    // console.log(ghost.name, game_score);
 
     let current_pos = ghost.position;
     let dest_cell = maze.cellAt({x: 4, y: 5});
@@ -104,31 +103,16 @@ function on_ghost_eaten(ghost) {
 }
 
 function on_resource_eaten(resource) {
-    score += resource.points;
-    console.log('score', score);
-}
-
-function set_ghost_eatable(ghost, eatable) {
-    ghost.eatable = eatable;
-    ghost.velocity = ghost.velocity.mul(ghost.eatable ? 1/2 : 2);
-}
-
-function on_pill_timeout() {
-    for (let ghost of ghosts) {
-        set_ghost_eatable(ghost, false);
-    }
+    game_score += resource.points;
+    // console.log('score', game_score);
 }
 
 function on_pill_eaten() {
     ghost_points_coefficient = 0;
     for (let ghost of ghosts) {
-        set_ghost_eatable(ghost, true);
+        ghost.eatable = true;
+        ghost.velocity = ghost.velocity.mul(ghost.eatable ? 1/2 : 2);
     }
-    if (eatable_timer_id) {
-        clearTimeout(eatable_timer_id);
-        eatable_timer_id = null;
-    }
-    eatable_timer_id = setTimeout(on_pill_timeout, GHOST_EATABLE_TIMEOUT);
 }
 
 function position_to_cell(pos) {
@@ -227,7 +211,9 @@ function draw(entity) {
     entity.draw(SCALE);
 }
 
-function run() {
+function run(timestamp) {
+    scheduler.update(timestamp);
+
     graphics.clear();
     for (let entity of entities) {
         draw(entity);
