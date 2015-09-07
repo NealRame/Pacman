@@ -22,8 +22,11 @@ class Vector2D {
     equal(v) {
         return this.x === v.x && this.y === v.y;
     }
-    static fromPoint([x1, y1], [x2, y2]) {
-        return new Vector2D([x2 - x1, y2 - y1]);
+    distance(v) {
+        return v.sub(this).norm;
+    }
+    static fromPoint(p1, p2) {
+        return new Vector2D([p2.x - p1.x, p2.y - p1.y]);
     }
 }
 module.exports = Vector2D;

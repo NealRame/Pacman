@@ -41,13 +41,12 @@ const RESOURCE_MAP = [
     [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1],
     [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1]
 ];
-const GHOST_MAP = [
-    ['blinky', '#fd0900', [4, 5]],
-    ['pinky',  '#feb8de', [5, 5]],
-    ['inky',   '#22ffde', [6, 5]],
-    ['clyde',  '#feb846', [7, 5]]
-];
 const ENTITY_SPEED = 1/20;
+const SCATTER_MODE = 0;
+const CHASE_MODE = 1;
+
+let game_score = 0;
+let game_mode = SCATTER_MODE;
 
 function *resource_generator(map) {
     for (let i = 0; i < map.length; ++i) {
@@ -72,22 +71,93 @@ function *resource_generator(map) {
     }
 }
 
+let maze = Maze.fromMap(MAZE_MAP);
+
+let ghost_points_coefficient = 0;
+let pacman = new Pacman('pacman', [0, 0]);
+let blinky = new Ghost(
+    'blinky',
+    '#fd0900',
+    [4, 5],
+    () => {
+        if (game_mode === SCATTER_MODE) {
+            return new Vector2D([maze.columns - 2, -1]);
+        }
+        return pacman.position;
+    }
+);
+let pinky = new Ghost(
+    'pinky',
+    '#feb8de',
+    [5, 5],
+    () => {
+        if (game_mode === SCATTER_MODE) {
+            return new Vector2D([1, -1]);
+        }
+        let u = pacman.velocity.unit().mul(4);
+        if (u.equal({x: 0, y: 0})) {
+            u = new Vector2D([4, 0]);
+        }
+        return pacman.position.add(u);
+    }
+);
+let inky = new Ghost(
+    'inky',
+    '#22ffde',
+    [6, 5],
+    () => {
+        if (game_mode === SCATTER_MODE) {
+            return new Vector2D([maze.columns - 1, maze.rows]);
+        }
+        let u = pacman.velocity.unit().mul(2);
+        if (u.equal({x: 0, y: 0})) {
+            u = new Vector2D([2, 0]);
+        }
+        let p = Vector2D.fromPoint(blinky.position, pacman.position.add(u));
+        return u.add(p);
+    }
+);
+let clyde = new Ghost(
+    'clyde',
+    '#feb846',
+    [7, 5],
+    () => {
+        if (game_mode === SCATTER_MODE) {
+            return new Vector2D([0, maze.rows]);
+        }
+        let d = pacman.distanceFrom(clyde.position);
+        return d > 8 ? pacman.position : new Vector2D([0, maze.rows]);
+    }
+);
+
+const GHOST_MAP = [blinky, pinky, inky, clyde];
+
 function *ghost_generator(map) {
-    for (let data of map) {
-        let ghost = new Ghost(...data);
+    for (let ghost of map) {
         ghost.on('eaten', on_ghost_eaten);
         yield ghost;
     }
 }
 
-let game_score = 0;
-let ghost_points_coefficient = 0;
-let maze = Maze.fromMap(MAZE_MAP);
-let pacman = new Pacman('pacman', [0, 0]);
 let [...ghosts] = ghost_generator(GHOST_MAP);
 let [...resources] = resource_generator(RESOURCE_MAP);
 let entities = [maze, ...resources, pacman, ...ghosts];
 let move_map = {};
+
+let enter_chase_mode;
+let enter_scatter_mode;
+
+enter_scatter_mode = function () {
+    console.log('entering scattering game mode');
+    game_mode = SCATTER_MODE;
+    scheduler.delay(7000, enter_chase_mode);
+};
+
+enter_chase_mode = function () {
+    console.log('entering chasing game mode');
+    game_mode = CHASE_MODE;
+    scheduler.delay(20000, enter_scatter_mode);
+};
 
 function on_ghost_eaten(ghost) {
     ghost_points_coefficient += 1;
@@ -124,9 +194,14 @@ function position_to_cell(pos) {
 
 function ghost_next_cell(ghost, current, origin) {
     let next_cell;
-    let candidates = _.chain(maze.reachableNeighborsOf(current)).shuffle().pluck(1).value();
+    let candidates = _.chain(maze.reachableNeighborsOf(current)).pluck(1).value();
     if (candidates.length > 1) {
-        next_cell = _.find(candidates, cell => cell !== origin);
+        next_cell = _.min(candidates, (cell) => {
+            if (cell === origin) {
+                return Infinity;
+            }
+            return ghost.target().distance(cell.position);
+        });
     } else {
         next_cell = _.first(candidates);
     }
@@ -134,26 +209,26 @@ function ghost_next_cell(ghost, current, origin) {
 }
 
 function move_ghost(ghost) {
-    let {orig_cell, dest_cell} = move_map[ghost.name] || {};
+    let {orig_cell, next_cell} = move_map[ghost.name] || {};
 
-    if (!dest_cell) {
+    if (!next_cell) {
         let current_pos = ghost.position;
         let current_cell = position_to_cell(current_pos);
         let speed = ghost.eatable ? ENTITY_SPEED/2 : ENTITY_SPEED;
 
-        dest_cell = ghost_next_cell(ghost, current_cell, orig_cell);
+        next_cell = ghost_next_cell(ghost, current_cell, orig_cell);
         orig_cell = current_cell;
 
         ghost.eaten = false;
-        ghost.velocity = dest_cell.position.sub(current_pos).unit().mul(speed);
-        move_map[ghost.name] = {orig_cell, dest_cell};
+        ghost.velocity = next_cell.position.sub(current_pos).unit().mul(speed);
+        move_map[ghost.name] = {orig_cell, next_cell};
     }
 
-    if (ghost.distanceFrom(dest_cell.position) > ghost.speed) {
+    if (ghost.distanceFrom(next_cell.position) > ghost.speed) {
         ghost.step();
     } else {
-        ghost.position = dest_cell.position;
-        delete move_map[ghost.name].dest_cell;
+        ghost.position = next_cell.position;
+        delete move_map[ghost.name].next_cell;
     }
 }
 
@@ -211,8 +286,13 @@ function draw(entity) {
     entity.draw(SCALE);
 }
 
+let init_game_mode = _.once(function() {
+    enter_scatter_mode();
+});
+
 function run(timestamp) {
     scheduler.update(timestamp);
+    init_game_mode();
 
     graphics.clear();
     for (let entity of entities) {
