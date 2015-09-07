@@ -1,3 +1,4 @@
+var _ = require('underscore');
 var scheduler = require('./scheduler');
 var graphics = require('./graphics');
 var MovingEntity = require('./moving-entity');
@@ -29,7 +30,7 @@ const INNER_GHOST_EYE = new Path2D(`
 `);
 
 class Ghost extends(MovingEntity) {
-    constructor(name, color = '#222', pos = new Vector2D(), target) {
+    constructor(name, color = '#222', pos = new Vector2D(), behavior) {
         super(pos);
         let _color = color;   // eslint-disable-line no-underscore-dangle
         let _eatable = false; // eslint-disable-line no-underscore-dangle
@@ -71,7 +72,12 @@ class Ghost extends(MovingEntity) {
                 }
             }
         });
-        this.target = target || (() => this.position);
+        Object.defineProperty(this, 'target', {
+            enumerable: true,
+            get: () => {
+                return _.result(behavior, this.state || 'chasing', pos);
+            }
+        });
     }
     _draw(scale) {
         // We could have used the `Vector2D#norm` getter but `MovingEntity`
