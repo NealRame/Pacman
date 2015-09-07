@@ -54,10 +54,10 @@ function *resource_generator(map) {
             let resource;
             switch (RESOURCE_MAP[i][j]) {
                 case 1:
-                    resource = new Biscuit([j, i]);
+                    resource = new Biscuit(new Vector2D([j, i]));
                     break;
                 case 2:
-                    resource = new Pill([j, i]);
+                    resource = new Pill(new Vector2D([j, i]));
                     resource.on('eaten', on_pill_eaten);
                     break;
                 default:
@@ -74,11 +74,11 @@ function *resource_generator(map) {
 let maze = Maze.fromMap(MAZE_MAP);
 
 let ghost_points_coefficient = 0;
-let pacman = new Pacman('pacman', [0, 0]);
+let pacman = new Pacman('pacman', new Vector2D([0, 0]));
 let blinky = new Ghost(
     'blinky',
     '#fd0900',
-    [4, 5],
+    new Vector2D([4, 5]),
     () => {
         if (game_mode === SCATTER_MODE) {
             return new Vector2D([maze.columns - 2, -1]);
@@ -89,7 +89,7 @@ let blinky = new Ghost(
 let pinky = new Ghost(
     'pinky',
     '#feb8de',
-    [5, 5],
+    new Vector2D([5, 5]),
     () => {
         if (game_mode === SCATTER_MODE) {
             return new Vector2D([1, -1]);
@@ -104,7 +104,7 @@ let pinky = new Ghost(
 let inky = new Ghost(
     'inky',
     '#22ffde',
-    [6, 5],
+    new Vector2D([6, 5]),
     () => {
         if (game_mode === SCATTER_MODE) {
             return new Vector2D([maze.columns - 1, maze.rows]);
@@ -120,7 +120,7 @@ let inky = new Ghost(
 let clyde = new Ghost(
     'clyde',
     '#feb846',
-    [7, 5],
+    new Vector2D([7, 5]),
     () => {
         if (game_mode === SCATTER_MODE) {
             return new Vector2D([0, maze.rows]);

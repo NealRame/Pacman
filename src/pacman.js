@@ -1,6 +1,7 @@
 var functional = require('./functional');
 var graphics = require('./graphics');
 var MovingEntity = require('./moving-entity');
+var Vector2D = require('./vector2d');
 
 function *pacman_path_generator(n) {
     for (let i of functional.range(-n, n + 1)) {
@@ -25,8 +26,8 @@ function *pacman_path_generator(n) {
 const [...PACMAN] = pacman_path_generator(19);
 
 class Pacman extends(MovingEntity) {
-    constructor(name, [x = 0, y = 0] = []) {
-        super([x, y]);
+    constructor(name, pos = new Vector2D()) {
+        super(pos);
         this.name = name;
         this.index = 0;
     }

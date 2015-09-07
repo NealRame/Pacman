@@ -2,8 +2,8 @@ var Entity = require('./entity');
 var Vector2D = require('./vector2d');
 
 class MovingEntity extends Entity {
-    constructor([x = 0, y = 0] = []) {
-        super([x, y]);
+    constructor(pos = new Vector2D()) {
+        super(pos);
         let velocity = new Vector2D();
         let direction = new Vector2D();
         let speed = velocity.norm;

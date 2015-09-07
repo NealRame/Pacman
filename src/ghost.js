@@ -1,6 +1,5 @@
 var scheduler = require('./scheduler');
 var graphics = require('./graphics');
-
 var MovingEntity = require('./moving-entity');
 var Vector2D = require('./vector2d');
 
@@ -30,8 +29,8 @@ const INNER_GHOST_EYE = new Path2D(`
 `);
 
 class Ghost extends(MovingEntity) {
-    constructor(name, color = '#222', [x = 0, y = 0] = [], target) {
-        super([x, y]);
+    constructor(name, color = '#222', pos = new Vector2D(), target) {
+        super(pos);
         let _color = color;   // eslint-disable-line no-underscore-dangle
         let _eatable = false; // eslint-disable-line no-underscore-dangle
         let _task_id = null;  // eslint-disable-line no-underscore-dangle

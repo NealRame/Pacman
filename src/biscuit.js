@@ -1,9 +1,10 @@
 var Entity = require('./entity');
 var graphics = require('./graphics');
+var Vector2D = require('./vector2d');
 
 class Biscuit extends Entity {
-    constructor([x = 0, y = 0] = []) {
-        super([x, y]);
+    constructor(pos = new Vector2D()) {
+        super(pos);
         Object.defineProperty(this, 'points', {
             enumerable: true,
             get: () => 10

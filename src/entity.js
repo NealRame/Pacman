@@ -3,9 +3,8 @@ var graphics = require('./graphics');
 var Vector2D = require('./vector2d');
 
 class Entity extends EventEmitter {
-    constructor([x = 0, y = 0] = []) {
+    constructor(pos = new Vector2D()) {
         super();
-        let pos = new Vector2D([x, y]);
         let eaten = false;
         Object.defineProperty(this, 'x', {
             enumerable: true,
