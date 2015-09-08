@@ -29,4 +29,22 @@ class Vector2D {
         return new Vector2D([p2.x - p1.x, p2.y - p1.y]);
     }
 }
+
+Object.defineProperty(Vector2D, 'NORTH', {
+    enumerable: true,
+    value: new Vector2D([ 0, -1])
+});
+Object.defineProperty(Vector2D, 'EAST', {
+    enumerable: true,
+    value: new Vector2D([ 1,  0])
+});
+Object.defineProperty(Vector2D, 'SOUTH', {
+    enumerable: true,
+    value: new Vector2D([ 0,  1])
+});
+Object.defineProperty(Vector2D, 'WEST', {
+    enumerable: true,
+    value: new Vector2D([-1,  0])
+});
+
 module.exports = Vector2D;
