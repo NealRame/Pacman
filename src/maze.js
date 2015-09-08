@@ -3,12 +3,6 @@ var functional = require('./functional');
 var graphics = require('./graphics');
 var Vector2D = require('./vector2d');
 
-// let cardinal_direction_to_vector = functional.dispatch(
-//     direction => direction === 'north' ? new Vector2D([0, -1]) : null,
-//     direction => direction === 'south' ? new Vector2D([0,  1]) : null,
-//     direction => direction === 'east'  ? new Vector2D([1,  0]) : null,
-//     direction => direction === 'west'  ? new Vector2D([0, -1]) : null
-// );
 let vector_to_cardinal_direction = functional.dispatch(
     v => v.x === 0 && v.y < 0 ? 'north' : null,
     v => v.x === 0 && v.y > 0 ? 'south' : null,
