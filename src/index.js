@@ -148,7 +148,6 @@ let enter_chase_mode;
 let enter_scatter_mode;
 
 enter_scatter_mode = function () {
-    console.log('entering scattering mode');
     for (let ghost of ghosts) {
         ghost.state = 'scattering';
     }
@@ -156,7 +155,6 @@ enter_scatter_mode = function () {
 };
 
 enter_chase_mode = function () {
-    console.log('entering chasing mode');
     for (let ghost of ghosts) {
         ghost.state = 'chasing';
     }
@@ -167,12 +165,10 @@ function on_ghost_eaten(ghost) {
     ghost_points_coefficient += 1;
     ghost.eatable = false;
     game_score += ghost_points_coefficient*ghost.points;
-    // console.log(ghost.name, game_score);
 }
 
 function on_resource_eaten(resource) {
     game_score += resource.points;
-    // console.log('score', game_score);
 }
 
 function on_pill_eaten() {
@@ -322,15 +318,9 @@ function run(timestamp) {
     }
     let pos = pacman.position;
     for (let resource of resources) {
-        try {
-            if (!resource.eaten && pos.equal(resource.position)) {
-                resource.eaten = true;
-            }
-        } catch (err) {
-            console.log(pos);
-            throw err;
+        if (!resource.eaten && pos.equal(resource.position)) {
+            resource.eaten = true;
         }
-
     }
     for (let ghost of ghosts) {
         if (pacman.distanceFrom(ghost.position) < .5) {
