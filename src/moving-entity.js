@@ -11,6 +11,10 @@ class MovingEntity extends Entity {
             get: () => _direction,
             set: (direction) => _direction = direction.unit()
         });
+        Object.defineProperty(this, 'initialPosition', {
+            enumerable: true,
+            get: () => pos
+        });
         Object.defineProperty(this, 'speed', {
             enumerable: true,
             get: _.isFunction(speed) ? speed.bind(this) : _.constant(speed)
@@ -27,6 +31,11 @@ class MovingEntity extends Entity {
     }
     step() {
         this.position = this.position.add(this.velocity);
+    }
+    reset() {
+        super.reset();
+        this.direction = new Vector2D();
+        this.position = this.initialPosition;
     }
 }
 module.exports = MovingEntity;

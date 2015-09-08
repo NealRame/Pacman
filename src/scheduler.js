@@ -62,6 +62,9 @@ module.exports = {
     cancel: function(task_id) {
         tasks.delete(task_id);
     },
+    cancelAll: function() {
+        tasks.clear();
+    },
     delay: function(wait, task) {
         return put_task(
             next_task_id++,

@@ -88,6 +88,10 @@ class Ghost extends(MovingEntity) {
             super.step();
         };
     }
+    reset() {
+        super.reset();
+        this.eatable = false;
+    }
     _draw(scale) {
         // We could have used the `Vector2D#norm` getter but `MovingEntity`
         // compute this value when their velocity are set.

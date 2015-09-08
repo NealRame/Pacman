@@ -5,21 +5,22 @@ var Vector2D = require('./vector2d');
 class Entity extends EventEmitter {
     constructor(pos = new Vector2D()) {
         super();
-        let _eaten = false; // eslint-disable-line no-underscore-dangle
+        let _eaten = false;  // eslint-disable-line no-underscore-dangle
+        let _position = pos; // eslint-disable-line no-underscore-dangle
         Object.defineProperty(this, 'x', {
             enumerable: true,
-            get: () => pos.x,
-            set: v => pos.x = v
+            get: () => _position.x,
+            set: v => _position.x = v
         });
         Object.defineProperty(this, 'y', {
             enumerable: true,
-            get: () => pos.y,
-            set: v => pos.y = v
+            get: () => _position.y,
+            set: v => _position.y = v
         });
         Object.defineProperty(this, 'position', {
             enumerable: true,
-            get: () => pos,
-            set: (p) => pos = p
+            get: () => _position,
+            set: (p) => _position = p
         });
         Object.defineProperty(this, 'eaten', {
             enumerable: true,
@@ -30,6 +31,9 @@ class Entity extends EventEmitter {
                 }
             }
         });
+    }
+    reset() {
+        this.eaten = false;
     }
     draw(scale = 1) {
         /* eslint-disable no-underscore-dangle */
