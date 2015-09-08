@@ -71,12 +71,21 @@ function *resource_generator(map) {
 let maze = Maze.fromMap(MAZE_MAP);
 
 let ghost_points_coefficient = 0;
-let pacman = new Pacman('pacman', new Vector2D([0, 0]));
+let pacman = new Pacman('pacman', new Vector2D([0, 0]), ENTITY_SPEED);
+
+function ghost_speed() {
+    if (this.eaten) {
+        return ENTITY_SPEED*2;
+    } else if (this.eatable) {
+        return ENTITY_SPEED/2;
+    }
+    return ENTITY_SPEED;
+}
 
 let blinky = new Ghost(
     'blinky',
     '#fd0900',
-    new Vector2D([4, 5]), {
+    new Vector2D([4, 5]), ghost_speed, {
     chasing: () => pacman.position,
     scattering: new Vector2D([maze.columns - 2, -1])
 });
@@ -84,7 +93,7 @@ let blinky = new Ghost(
 let pinky = new Ghost(
     'pinky',
     '#feb8de',
-    new Vector2D([5, 5]), {
+    new Vector2D([5, 5]), ghost_speed, {
     chasing: () => {
         let u = pacman.velocity.unit().mul(4);
         if (u.equal({x: 0, y: 0})) {
@@ -98,7 +107,7 @@ let pinky = new Ghost(
 let inky = new Ghost(
     'inky',
     '#22ffde',
-    new Vector2D([6, 5]), {
+    new Vector2D([6, 5]), ghost_speed, {
     chasing: () => {
         let u = pacman.velocity.unit().mul(2);
         if (u.equal({x: 0, y: 0})) {
@@ -113,7 +122,7 @@ let inky = new Ghost(
 let clyde = new Ghost(
     'clyde',
     '#feb846',
-    new Vector2D([7, 5]), {
+    new Vector2D([7, 5]), ghost_speed, {
     chasing: () => {
         let d = pacman.distanceFrom(clyde.position);
         return d > 8 ? pacman.position : new Vector2D([0, maze.rows]);
@@ -156,15 +165,9 @@ enter_chase_mode = function () {
 
 function on_ghost_eaten(ghost) {
     ghost_points_coefficient += 1;
+    ghost.eatable = false;
     game_score += ghost_points_coefficient*ghost.points;
     // console.log(ghost.name, game_score);
-
-    let current_pos = ghost.position;
-    let dest_cell = maze.cellAt({x: 4, y: 5});
-
-    ghost.eatable = false;
-    ghost.velocity = dest_cell.position.sub(current_pos).unit().mul(ENTITY_SPEED*2);
-    move_map[ghost.name] = {dest_cell};
 }
 
 function on_resource_eaten(resource) {
@@ -176,7 +179,6 @@ function on_pill_eaten() {
     ghost_points_coefficient = 0;
     for (let ghost of ghosts) {
         ghost.eatable = true;
-        ghost.velocity = ghost.velocity.mul(ghost.eatable ? 1/2 : 2);
     }
 }
 
@@ -187,24 +189,33 @@ function position_to_cell(pos) {
     });
 }
 
+function ghost_candidate_cells(ghost, current, origin) {
+    if (ghost.eaten) {
+        let pos = current.position;
+        if (pos.equal({x: 5, y: 4}) || pos.equal({x: 6, y: 4})) {
+            return [maze.cellAt(pos.add(Vector2D.SOUTH))];
+        }
+    }
+    let cells = _.chain(maze.reachableNeighborsOf(current)).pluck(1).value();
+    return cells.length > 1 ? _.omit(cells, cell => cell === origin) : cells;
+}
+
 function ghost_next_cell(ghost, current, origin) {
+    let candidates = ghost_candidate_cells(ghost, current, origin);
     let next_cell;
-    let candidates = _.chain(maze.reachableNeighborsOf(current)).pluck(1).value();
-    if (candidates.length > 1) {
-        candidates = _.omit(candidates, cell => cell === origin);
+    if (candidates.length === 1) {
+        next_cell = _.first(candidates);
+    } else {
         next_cell = ghost.eatable
             ? _.chain(candidates).shuffle().first().value()
             : _.min(candidates, (cell) => {
                 if (cell === origin) {
                     return Infinity;
                 }
-                let target = ghost.target;
-                return target.distance(cell.position);
+                return ghost.target.distance(cell.position);
             });
-    } else {
-        next_cell = _.first(candidates);
     }
-    return next_cell;
+    return {orig_cell: current, next_cell};
 }
 
 function move_ghost(ghost) {
@@ -212,15 +223,10 @@ function move_ghost(ghost) {
 
     if (!next_cell) {
         let current_pos = ghost.position;
-        let current_cell = position_to_cell(current_pos);
-        let speed = ghost.eatable ? ENTITY_SPEED/2 : ENTITY_SPEED;
 
-        next_cell = ghost_next_cell(ghost, current_cell, orig_cell);
-        orig_cell = current_cell;
-
-        ghost.eaten = false;
-        ghost.velocity = next_cell.position.sub(current_pos).unit().mul(speed);
-        move_map[ghost.name] = {orig_cell, next_cell};
+        move_map[ghost.name] = ghost_next_cell(ghost, position_to_cell(current_pos), orig_cell);
+        next_cell = move_map[ghost.name].next_cell;
+        ghost.direction = next_cell.position.sub(current_pos).unit();
     }
 
     if (ghost.distanceFrom(next_cell.position) > ghost.speed) {
@@ -231,53 +237,63 @@ function move_ghost(ghost) {
     }
 }
 
-function pacman_next_cell(current_cell, direction) {
-    return maze.reachableNeighbor(current_cell, direction)
-        || maze.reachableNeighbor(current_cell, pacman.direction);
+function pacman_next_cell() {
+    if (move_map.pacman.next_cell) {
+        return move_map.pacman.next_cell;
+    }
+
+    let direction = move_map.pacman.direction;
+    let current_pos = pacman.position;
+    let current_cell = position_to_cell(current_pos);
+
+    // first try to go in the last requested direction, if direction is not
+    // permitted try to continue in the same direction.
+    let cell = maze.reachableNeighbor(current_cell, direction);
+    if (!cell) {
+        cell = maze.reachableNeighbor(current_cell, pacman.direction);
+        if (!cell) {
+            pacman.direction = new Vector2D();
+        }
+    } else {
+        pacman.direction = direction;
+        delete move_map.pacman.direction;
+    }
+
+    move_map.pacman.next_cell = cell;
+
+    return cell;
 }
 
 function move_pacman() {
-    let {dest_cell, direction = new Vector2D()} = move_map.pacman || {};
-
-    if (!dest_cell) {
-        let current_pos = pacman.position;
-        let current_cell = position_to_cell(current_pos);
-
-        if ((dest_cell = pacman_next_cell(current_cell, direction))) {
-            pacman.velocity = dest_cell.position.sub(current_pos).unit().mul(ENTITY_SPEED);
-            move_map.pacman = {dest_cell, direction};
-        } else {
-            pacman.velocity = new Vector2D();
-        }
-    }
-
-    if (dest_cell) {
-        if (pacman.distanceFrom(dest_cell.position) > pacman.speed) {
+    move_map.pacman = move_map.pacman || {};
+    let cell = pacman_next_cell(move_map.pacman.direction);
+    if (cell) {
+        if (pacman.distanceFrom(cell.position) > pacman.speed) {
             pacman.step();
         } else {
-            pacman.position = dest_cell.position;
-            delete move_map.pacman.dest_cell;
+            pacman.position = cell.position;
+            delete move_map.pacman.next_cell;
         }
     }
 }
 
 let key_to_direction = functional.dispatch(
-    ev => ev.keyCode === KEY_LEFT ?  new Vector2D([-1,  0]) : null,
-    ev => ev.keyCode === KEY_RIGHT ? new Vector2D([ 1,  0]) : null,
-    ev => ev.keyCode === KEY_UP ?    new Vector2D([ 0, -1]) : null,
-    ev => ev.keyCode === KEY_DOWN ?  new Vector2D([ 0,  1]) : null
+    ev => ev.keyCode === KEY_LEFT ?  Vector2D.WEST  : null,
+    ev => ev.keyCode === KEY_RIGHT ? Vector2D.EAST  : null,
+    ev => ev.keyCode === KEY_UP ?    Vector2D.NORTH : null,
+    ev => ev.keyCode === KEY_DOWN ?  Vector2D.SOUTH : null
 );
 
 function key_down(ev) {
     let direction = key_to_direction(ev);
     if (direction) {
+        move_map.pacman = move_map.pacman || {};
+        if (direction.add(pacman.direction).isNull()) {
+            delete move_map.pacman.next_cell;
+        }
+        move_map.pacman.direction = direction;
         ev.preventDefault();
         ev.stopPropagation();
-        move_map.pacman = move_map.pacman || {};
-        move_map.pacman.direction = direction;
-        if (direction.equal(pacman.direction.mul(-1))) {
-            delete move_map.pacman.dest_cell;
-        }
     }
 }
 
@@ -286,13 +302,17 @@ function draw(entity) {
 }
 
 let init_game_mode = _.once(function() {
+    document.addEventListener('keydown', key_down, true);
+    graphics.translate({
+        x: (CANVAS_SIZE.width - SCALE*maze.columns)/2,
+        y: (CANVAS_SIZE.height - SCALE*maze.rows)/2
+    });
     enter_scatter_mode();
 });
 
 function run(timestamp) {
     scheduler.update(timestamp);
     init_game_mode();
-
     graphics.clear();
     for (let entity of entities) {
         draw(entity);
@@ -302,9 +322,15 @@ function run(timestamp) {
     }
     let pos = pacman.position;
     for (let resource of resources) {
-        if (!resource.eaten && pos.equal(resource.position)) {
-            resource.eaten = true;
+        try {
+            if (!resource.eaten && pos.equal(resource.position)) {
+                resource.eaten = true;
+            }
+        } catch (err) {
+            console.log(pos);
+            throw err;
         }
+
     }
     for (let ghost of ghosts) {
         if (pacman.distanceFrom(ghost.position) < .5) {
@@ -319,11 +345,4 @@ function run(timestamp) {
     move_pacman();
     window.requestAnimationFrame(run);
 }
-
-document.addEventListener('keydown', key_down, true);
-
-graphics.translate({
-    x: (CANVAS_SIZE.width - SCALE*maze.columns)/2,
-    y: (CANVAS_SIZE.height - SCALE*maze.rows)/2
-});
 window.requestAnimationFrame(run);

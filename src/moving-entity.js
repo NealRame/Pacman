@@ -1,28 +1,25 @@
+var _ = require('underscore');
 var Entity = require('./entity');
 var Vector2D = require('./vector2d');
 
 class MovingEntity extends Entity {
-    constructor(pos = new Vector2D()) {
+    constructor(pos = new Vector2D(), speed = 0) {
         super(pos);
-        let velocity = new Vector2D();
-        let direction = new Vector2D();
-        let speed = velocity.norm;
-        Object.defineProperty(this, 'velocity', {
+        let _direction = new Vector2D(); // eslint-disable-line no-underscore-dangle
+        Object.defineProperty(this, 'direction', {
             enumerable: true,
-            get: () => velocity,
-            set: (v) => {
-                speed = v.norm;
-                velocity = v;
-                direction = speed ? velocity.mul(1/speed) : new Vector2D();
-            }
+            get: () => _direction,
+            set: (direction) => _direction = direction.unit()
         });
         Object.defineProperty(this, 'speed', {
             enumerable: true,
-            get: () => speed
+            get: _.isFunction(speed) ? speed.bind(this) : _.constant(speed)
         });
-        Object.defineProperty(this, 'direction', {
+        Object.defineProperty(this, 'velocity', {
             enumerable: true,
-            get: () => direction
+            get: () => {
+                return _direction.mul(this.speed);
+            }
         });
     }
     distanceFrom(p) {

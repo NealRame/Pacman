@@ -5,7 +5,7 @@ var Vector2D = require('./vector2d');
 class Entity extends EventEmitter {
     constructor(pos = new Vector2D()) {
         super();
-        let eaten = false;
+        let _eaten = false; // eslint-disable-line no-underscore-dangle
         Object.defineProperty(this, 'x', {
             enumerable: true,
             get: () => pos.x,
@@ -23,9 +23,9 @@ class Entity extends EventEmitter {
         });
         Object.defineProperty(this, 'eaten', {
             enumerable: true,
-            get: () => eaten,
+            get: () => _eaten,
             set: (b) => {
-                if ((eaten = b)) {
+                if ((_eaten = b)) {
                     this.emit('eaten', this);
                 }
             }

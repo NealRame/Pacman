@@ -30,8 +30,8 @@ const INNER_GHOST_EYE = new Path2D(`
 `);
 
 class Ghost extends(MovingEntity) {
-    constructor(name, color = '#222', pos = new Vector2D(), behavior) {
-        super(pos);
+    constructor(name, color = '#222', pos = new Vector2D(), speed = 0., behavior = {}) {
+        super(pos, speed);
         let _color = color;   // eslint-disable-line no-underscore-dangle
         let _eatable = false; // eslint-disable-line no-underscore-dangle
         let _task_id = null;  // eslint-disable-line no-underscore-dangle
@@ -75,9 +75,18 @@ class Ghost extends(MovingEntity) {
         Object.defineProperty(this, 'target', {
             enumerable: true,
             get: () => {
+                if (this.eaten) {
+                    return pos;
+                }
                 return _.result(behavior, this.state || 'chasing', pos);
             }
         });
+        this.step = () => {
+            if (this.position.equal(pos)) {
+                this.eaten = false;
+            }
+            super.step();
+        };
     }
     _draw(scale) {
         // We could have used the `Vector2D#norm` getter but `MovingEntity`

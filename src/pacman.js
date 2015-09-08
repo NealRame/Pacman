@@ -26,8 +26,8 @@ function *pacman_path_generator(n) {
 const [...PACMAN] = pacman_path_generator(19);
 
 class Pacman extends(MovingEntity) {
-    constructor(name, pos = new Vector2D()) {
-        super(pos);
+    constructor(name, pos = new Vector2D(), speed = 0) {
+        super(pos, speed);
         this.name = name;
         this.index = 0;
     }
@@ -53,7 +53,7 @@ class Pacman extends(MovingEntity) {
         graphics.fillPath(PACMAN[this.index]);
         graphics.drawPath(PACMAN[this.index]);
         graphics.pop();
-        this.index = this.speed !== 0 ? (this.index + 1)%PACMAN.length : 0;
+        this.index = this.direction.isNull() ? 0 : (this.index + 1)%PACMAN.length;
     }
 }
 module.exports = Pacman;

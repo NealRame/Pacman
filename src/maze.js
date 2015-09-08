@@ -110,12 +110,16 @@ class Maze {
         };
     }
     neighbor(cell, direction) {
-        return this.cellAt(cell.position.add(direction));
+        if (direction) {
+            return this.cellAt(cell.position.add(direction));
+        }
     }
     reachableNeighbor(cell, direction) {
-        let cardinal_direction = vector_to_cardinal_direction(direction);
-        if (cardinal_direction && cell[cardinal_direction]) {
-            return this.neighbor(cell, direction);
+        if (direction) {
+            let cardinal_direction = vector_to_cardinal_direction(direction);
+            if (cardinal_direction && cell[cardinal_direction]) {
+                return this.neighbor(cell, direction);
+            }
         }
     }
     neighborsOf(cell) {
