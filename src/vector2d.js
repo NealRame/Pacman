@@ -25,6 +25,9 @@ class Vector2D {
     distance(v) {
         return v.sub(this).norm;
     }
+    isNull() {
+        return this.x === 0 && this.y === 0;
+    }
     static fromPoint(p1, p2) {
         return new Vector2D([p2.x - p1.x, p2.y - p1.y]);
     }
