@@ -297,7 +297,7 @@ function draw(entity) {
     entity.draw(SCALE);
 }
 
-let init_game_mode = _.once(function() {
+let init_once = _.once(function() {
     document.addEventListener('keydown', key_down, true);
     graphics.translate({
         x: (CANVAS_SIZE.width - SCALE*maze.columns)/2,
@@ -308,7 +308,7 @@ let init_game_mode = _.once(function() {
 
 function run(timestamp) {
     scheduler.update(timestamp);
-    init_game_mode();
+    init_once();
     graphics.clear();
     for (let entity of entities) {
         draw(entity);
