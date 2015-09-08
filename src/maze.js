@@ -120,10 +120,10 @@ class Maze {
     }
     neighborsOf(cell) {
         return _.filter([
-            ['north', this.cellAt(cell.position.add({x:  0, y: -1}))],
-            ['east',  this.cellAt(cell.position.add({x:  1, y:  0}))],
-            ['south', this.cellAt(cell.position.add({x:  0, y:  1}))],
-            ['west',  this.cellAt(cell.position.add({x: -1, y:  0}))]
+            ['north', this.cellAt(cell.position.add(Vector2D.NORTH))],
+            ['east',  this.cellAt(cell.position.add(Vector2D.EAST))],
+            ['south', this.cellAt(cell.position.add(Vector2D.SOUTH))],
+            ['west',  this.cellAt(cell.position.add(Vector2D.WEST))]
         ], elt => functional.existy(elt[1]));
     }
     reachableNeighborsOf(cell) {
