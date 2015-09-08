@@ -69,7 +69,6 @@ function *resource_generator(map) {
 }
 
 let maze = Maze.fromMap(MAZE_MAP);
-
 let ghost_points_coefficient = 0;
 let pacman = new Pacman('pacman', new Vector2D([0, 0]), ENTITY_SPEED);
 
@@ -215,8 +214,7 @@ function ghost_next_cell(ghost, current, origin) {
 }
 
 function move_ghost(ghost) {
-    let {orig_cell, next_cell} = move_map[ghost.name] || {};
-
+    let {orig_cell, next_cell} = move_map[ghost.name];
     if (!next_cell) {
         let current_pos = ghost.position;
 
@@ -224,7 +222,6 @@ function move_ghost(ghost) {
         next_cell = move_map[ghost.name].next_cell;
         ghost.direction = next_cell.position.sub(current_pos).unit();
     }
-
     if (ghost.distanceFrom(next_cell.position) > ghost.speed) {
         ghost.step();
     } else {
@@ -261,7 +258,6 @@ function pacman_next_cell() {
 }
 
 function move_pacman() {
-    move_map.pacman = move_map.pacman || {};
     let cell = pacman_next_cell(move_map.pacman.direction);
     if (cell) {
         if (pacman.distanceFrom(cell.position) > pacman.speed) {
@@ -303,6 +299,9 @@ let init_once = _.once(function() {
         x: (CANVAS_SIZE.width - SCALE*maze.columns)/2,
         y: (CANVAS_SIZE.height - SCALE*maze.rows)/2
     });
+    for (let entity of [...ghosts, pacman]) {
+        move_map[entity.name] = {};
+    }
     enter_scatter_mode();
 });
 
