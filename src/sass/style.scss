@@ -1,0 +1,20 @@
+body {
+    background-color: #000;
+    color: #e4e4f4;
+    font-family: 'VT323', ;
+}
+#score-area {
+    text-align: center;
+    h1 {
+        text-transform: uppercase;
+    }
+    #score {
+        font-size: 1.75em;
+        font-weight: bold;
+        margin: 0;
+    }
+}
+#graphics {
+    display: block;
+    margin: 0 auto;
+}
