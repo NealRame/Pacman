@@ -30,11 +30,11 @@ gulp.task('style', function() {
     return gulp.src('./src/sass/*.scss')
         .pipe(sass().on('error', sass.logError))
         .pipe(rename({extname: '.css'}))
-        .pipe(gulp.dest('./public/assets/styles'));
+        .pipe(gulp.dest('./public/assets/css'));
 });
 
 gulp.task('watch-style', function() {
-    return gulp.watch('./src/sass/*.scss', ['sass']);
+    return gulp.watch('./src/sass/*.scss', ['style']);
 });
 
 gulp.task('js', function() {
