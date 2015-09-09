@@ -16,14 +16,37 @@ function *pacman_path_generator(n) {
         } else {
             yield new Path2D(`
                 M .5 0
-                A .5 .5 0 1 1 0.5 -0.0001
+                A .5 .5 0 1 1 .5 -.0001
                 L .5 0
             `);
         }
     }
 }
 
+function *dying_pacman_path_generator(n) {
+    for (let i of functional.range(0, n + 1)) {
+        let theta = i*Math.PI/n;
+        if (i === 0) {
+            yield new Path2D(`
+                M .5 0
+                A .5 .5 0 1 1 .5 -.0001
+                L .5 0
+            `);
+        } else if (i === n) {
+            yield new Path2D();
+        } else {
+            yield new Path2D(`
+                M 0 0
+                L ${Math.cos(theta)/2}, ${Math.sin(theta)/2}
+                A .5 .5 0 ${i > n/2 ? 0 : 1} 1 ${Math.cos(theta)/2} ${-Math.sin(theta)/2}
+                L 0 0
+            `);
+        }
+    }
+}
+
 const [...PACMAN] = pacman_path_generator(19);
+const [...DYING_PACMAN] = dying_pacman_path_generator(38);
 
 class Pacman extends(MovingEntity) {
     constructor(name, pos = new Vector2D(), speed = 0) {
@@ -50,10 +73,19 @@ class Pacman extends(MovingEntity) {
         graphics.setBrush({
             color: '#ffdf00'
         });
-        graphics.fillPath(PACMAN[this.index]);
-        graphics.drawPath(PACMAN[this.index]);
+        if (this.eaten) {
+            graphics.fillPath(DYING_PACMAN[this.index]);
+            graphics.drawPath(DYING_PACMAN[this.index]);
+            if (this.index < DYING_PACMAN.length - 1) {
+                this.index++;
+            }
+        } else {
+            graphics.fillPath(PACMAN[this.index]);
+            graphics.drawPath(PACMAN[this.index]);
+
+            this.index = this.direction.isNull() ? 0 : (this.index + 1)%PACMAN.length;
+        }
         graphics.pop();
-        this.index = this.direction.isNull() ? 0 : (this.index + 1)%PACMAN.length;
     }
 }
 module.exports = Pacman;
