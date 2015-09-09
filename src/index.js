@@ -76,7 +76,9 @@ let pacman = new Pacman('pacman', new Vector2D([5, 6]), function() {
 });
 
 function ghost_speed() {
-    if (this.eaten) {
+    if (pacman.eaten) {
+        return 0;
+    } else if (this.eaten) {
         return ENTITY_SPEED*2;
     } else if (this.eatable) {
         return ENTITY_SPEED/2;
