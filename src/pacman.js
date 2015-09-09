@@ -53,6 +53,9 @@ class Pacman extends(MovingEntity) {
         super(pos, speed);
         this.name = name;
         this.index = 0;
+        this.on('eaten', () => {
+            this.index = 0;
+        });
     }
     _draw(scale) {
         graphics.push();
@@ -76,7 +79,7 @@ class Pacman extends(MovingEntity) {
         if (this.eaten) {
             graphics.fillPath(DYING_PACMAN[this.index]);
             graphics.drawPath(DYING_PACMAN[this.index]);
-            if (this.index < DYING_PACMAN.length - 1) {
+            if (this.index < (DYING_PACMAN.length - 1)) {
                 this.index++;
             }
         } else {

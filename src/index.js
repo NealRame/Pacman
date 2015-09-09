@@ -136,7 +136,7 @@ let clyde = new Ghost(
 
 const [...resources] = resource_generator(RESOURCE_MAP);
 const ghosts = [blinky, pinky, inky, clyde];
-const entities = [maze, ...resources, pacman, ...ghosts];
+const entities = [maze, ...resources, ...ghosts, pacman];
 
 let move_map = {};
 
@@ -333,7 +333,7 @@ function run(timestamp) {
         if (pacman.distanceFrom(ghost.position) < .5) {
             if (ghost.eatable) {
                 ghost.eaten = true;
-            } else if (!ghost.eaten) {
+            } else if (!(ghost.eaten || pacman.eaten)) {
                 pacman.eaten = true;
             }
         }
