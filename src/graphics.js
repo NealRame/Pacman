@@ -1,5 +1,4 @@
 var _ = require('underscore');
-var Vector2D = require('./vector2d');
 
 var canvas = document.getElementById('graphics');
 
