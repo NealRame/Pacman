@@ -4,8 +4,10 @@ var browserify = require('browserify');
 var buffer = require('vinyl-buffer');
 var gulp = require('gulp');
 var gutil = require('gulp-util');
+var rename = require('gulp-rename');
 var source = require('vinyl-source-stream');
 var sourcemaps = require('gulp-sourcemaps');
+var sass = require('gulp-sass');
 // var uglify = require('gulp-uglify');
 var watchify = require('watchify');
 
@@ -24,10 +26,24 @@ function bundle_js(bundler) {
         .pipe(gulp.dest('.'));
 }
 
-gulp.task('watchify', function () {
+gulp.task('style', function() {
+    return gulp.src('./src/sass/*.scss')
+        .pipe(sass().on('error', sass.logError))
+        .pipe(rename({extname: '.css'}))
+        .pipe(gulp.dest('./public/assets/styles'));
+});
+
+gulp.task('watch-style', function() {
+    return gulp.watch('./src/sass/*.scss', ['sass']);
+});
+
+gulp.task('js', function() {
+    return bundle_js(browserify('./src/js/index.js', {debug: true}).transform(babelify, {}));
+});
+
+gulp.task('watch-js', function() {
     var args = _.defaults(watchify.args, { debug: true });
-    var bundler = watchify(browserify('./src/index.js', args)).transform(babelify, {});
-    bundle_js(bundler);
+    var bundler = watchify(browserify('./src/js/index.js', args)).transform(babelify, {});
     bundler
         .on('update', function (ids) {
             gutil.log('Update:');
@@ -39,10 +55,8 @@ gulp.task('watchify', function () {
         .on('log', function (msg) {
             gutil.log(msg);
         });
-});
-
-gulp.task('default', function() {
-    var bundler = browserify('./src/index.js', {debug: true})
-        .transform(babelify, {});
     return bundle_js(bundler);
 });
+
+gulp.task('watch', ['watch-style', 'watch-js']);
+gulp.task('default', ['style', 'js']);
