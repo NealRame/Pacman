@@ -17,7 +17,7 @@ class Pill extends Entity {
         if (!this.eaten) {
             graphics.push();
             graphics.setBrush({
-                color: '#000'
+                color: '#dfa299'
             });
             graphics.fillPath(path);
             graphics.pop();
