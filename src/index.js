@@ -331,9 +331,8 @@ function run(timestamp) {
         if (pacman.distanceFrom(ghost.position) < .5) {
             if (ghost.eatable) {
                 ghost.eaten = true;
-            } else {
+            } else if (!ghost.eaten) {
                 pacman.eaten = true;
-                // TODO PACMAN IS DEAD!
             }
         }
     }
