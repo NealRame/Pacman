@@ -30,7 +30,7 @@ const RESOURCE_MAP = [
     [ 0,  0,  1,  0,  0,  0,  0,  0,  0,  1,  0,  0],
     [ 0,  0,  1,  0,  0,  0,  0,  0,  0,  1,  0,  0],
     [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1],
-    [ 2,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  2],
+    [ 2,  1,  1,  1,  1,  0,  1,  1,  1,  1,  1,  2],
     [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1],
     [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1]
 ];
@@ -81,7 +81,7 @@ class Game extends EventEmitter {
         let _lifes = 2;
         let _ghost_points_coefficient = 0;
         let _resources;
-        let _pacman = new Pacman('pacman', new Vector2D([5, 6]), function() {
+        let _pacman = new Pacman('pacman', new Vector2D([5, 8]), function() {
             return this.eaten ?  0 : ENTITY_SPEED;
         });
         let _blinky = new Ghost(
