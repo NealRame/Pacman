@@ -165,6 +165,11 @@ class Game extends EventEmitter {
             get: () => _high_score
         });
 
+        Object.defineProperty(this, 'level', {
+            enumerable: true,
+            get: () => _level
+        });
+
         let game_over = () => {
             if (!_game_over) {
                 _game_over = true;
@@ -219,7 +224,9 @@ class Game extends EventEmitter {
                 for (let entity of [_pacman, ...this.ghosts]) {
                     entity.freezed = true;
                 }
-                game_over();
+                scheduler.delay(2000, () => {
+                    game_over();
+                });
             }
         };
 

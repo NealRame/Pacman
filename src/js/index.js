@@ -135,7 +135,9 @@ let init_once = _.once(function() {
     game.on('high-score-changed', function(score) {
         ui.highScore = score;
     });
-
+    game.on('level-up', function(level) {
+        ui.level = level;
+    });
     game.on('life-count-changed', function(life_count) {
         ui.lifes = life_count;
     });
@@ -147,8 +149,10 @@ let init_once = _.once(function() {
         }
     });
     game.on('reset', function() {
-        ui.score = game.score;
+        ui.highScore = game.highScore;
+        ui.level = game.level;
         ui.lifes = game.lifes;
+        ui.score = game.score;
     });
     game.reset();
     ui.on('direction-changed', on_direction_changed);

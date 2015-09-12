@@ -23,10 +23,10 @@ let key_to_direction = functional.dispatch(
     ev => ev.keyCode === KEY_DOWN ?  Vector2D.SOUTH : null
 );
 
-let game_score_field = document.getElementById('score');
-let game_high_score_field = document.getElementById('high-score');
-
+let game_level_field = document.getElementById('level');
 let game_lifes_field = document.getElementById('lifes');
+let game_high_score_field = document.getElementById('high-score');
+let game_score_field = document.getElementById('score');
 
 class Ui extends EventEmitter {
     constructor() {
@@ -40,17 +40,21 @@ class Ui extends EventEmitter {
             }
         });
     }
-    set score(score) {
-        game_score_field.innerHTML = `${score}`;
-    }
-    set highScore(high_score) {
-        game_high_score_field.innerHTML = `${high_score}`;
-    }
     set lifes(life_count) {
         game_lifes_field.innerHTML = '';
         for (let life of create_life_elements(life_count)) {
             game_lifes_field.appendChild(life);
         }
+    }
+    set level(level) {
+        game_level_field.innerHTML = `${level}`;
+    }
+    set highScore(high_score) {
+        console.log(high_score);
+        game_high_score_field.innerHTML = `${high_score}`;
+    }
+    set score(score) {
+        game_score_field.innerHTML = `${score}`;
     }
 }
 
