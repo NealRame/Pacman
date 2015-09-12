@@ -148,11 +148,15 @@ let init_once = _.once(function() {
             game.levelUp();
         }
     });
+    game.on('game-started', function() {
+        ui.hideMessage();
+    });
     game.on('reset', function() {
         ui.highScore = game.highScore;
         ui.level = game.level;
         ui.lifes = game.lifes;
         ui.score = game.score;
+        ui.showMessage('Ready');
     });
     game.reset();
     ui.on('direction-changed', on_direction_changed);

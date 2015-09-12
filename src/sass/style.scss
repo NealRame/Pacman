@@ -6,43 +6,66 @@ body {
     font-family: 'VT323', ;
     margin: 0;
 }
-#scores-area {
-    margin: 0 auto;
-    overflow: auto;
-    text-align: center;
-    width: $ui-area-width;
-    h1 {
-        text-transform: uppercase;
-        margin: .25em 0;
-    }
-    .score-item {
-        float: left;
-        width: $ui-area-width/3;
-        p {
-            font-size: 1.75em;
-            font-weight: bold;
-            margin: 0;
+#game {
+    position: relative;
+    #scores-area {
+        margin: 0 auto;
+        overflow: auto;
+        text-align: center;
+        width: $ui-area-width;
+        h1 {
+            text-transform: uppercase;
+            margin: .25em 0;
+        }
+        .score-item {
+            float: left;
+            width: $ui-area-width/3;
+            p {
+                font-size: 1.75em;
+                font-weight: bold;
+                margin: 0;
+            }
         }
     }
-}
-#graphics {
-    display: block;
-    margin: 0 auto;
-}
-#controls-area {
-    margin: 0 auto;
-    width: $ui-area-width;
-    #lifes, #bonus {
-        float: left;
-        overflow: auto;
-        width: $ui-area-width/2;
+    #graphics {
+        display: block;
+        margin: 0 auto;
     }
-    #lifes {
-        .life {
-            display: inline-block;
-            &::before {
-                content: url(images/pacman.png);
-                margin: 4px;
+    #message {
+        color: #fff200;
+        font-size: 2em;
+        opacity: 0;
+        position: absolute;
+        text-align: center;
+        text-transform: uppercase;
+        top: 336px;
+        transition: opacity 1s;
+        -webkit-transition: opacity 1s;
+        width: 100%;
+        &[active] {
+            opacity: 1;
+            transition: opacity 1s;
+            -webkit-transition: opacity 1s;
+        }
+        &.red {
+            color: red;
+        }
+    }
+    #controls-area {
+        margin: 0 auto;
+        width: $ui-area-width;
+        #lifes, #bonus {
+            float: left;
+            overflow: auto;
+            width: $ui-area-width/2;
+        }
+        #lifes {
+            .life {
+                display: inline-block;
+                &::before {
+                    content: url(images/pacman.png);
+                    margin: 4px;
+                }
             }
         }
     }

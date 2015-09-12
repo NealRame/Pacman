@@ -27,6 +27,7 @@ let game_level_field = document.getElementById('level');
 let game_lifes_field = document.getElementById('lifes');
 let game_high_score_field = document.getElementById('high-score');
 let game_score_field = document.getElementById('score');
+let game_message_field = document.getElementById('message');
 
 class Ui extends EventEmitter {
     constructor() {
@@ -55,6 +56,13 @@ class Ui extends EventEmitter {
     }
     set score(score) {
         game_score_field.innerHTML = `${score}`;
+    }
+    showMessage(message) {
+        game_message_field.innerHTML = message;
+        game_message_field.setAttribute('active', '');
+    }
+    hideMessage() {
+        game_message_field.removeAttribute('active');
     }
 }
 
