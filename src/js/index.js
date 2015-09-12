@@ -1,13 +1,10 @@
 let _ = require('underscore');
-let Biscuit = require('./biscuit');
+
 var scheduler = require('./scheduler');
-let Ghost = require('./ghost');
-let graphics = require('./graphics');
-let Maze = require('./maze');
-let Pacman = require('./pacman');
-let Pill = require('./pill');
-let Vector2D = require('./vector2d');
+let Game = require('./game');
 let functional = require('./functional');
+let graphics = require('./graphics');
+let Vector2D = require('./vector2d');
 
 const KEY_LEFT = 37;
 const KEY_UP = 38;
@@ -15,128 +12,10 @@ const KEY_RIGHT = 39;
 const KEY_DOWN = 40;
 const CANVAS_SIZE = graphics.size();
 const SCALE = 40;
-const MAZE_MAP = [
-    [ 9,  5,  1,  5,  5,  3,  9,  5,  5,  1,  5,  3],
-    [10, 15, 10, 13,  7, 10, 10, 13,  7, 10, 15, 10],
-    [ 8,  5,  0,  1,  5,  4,  4,  5,  1,  0,  5,  2],
-    [12,  5,  2, 12,  5,  3,  9,  5,  6,  8,  5,  6],
-    [ 5,  7, 10,  9,  5,  4,  4,  5,  3, 10, 13,  5],
-    [ 5,  5,  0,  2, 13,  4,  4,  7,  8,  0,  5,  5],
-    [ 5,  7, 10,  8,  5,  5,  5,  5,  2, 10, 13,  5],
-    [ 9,  5,  0,  4,  5,  3,  9,  5,  4,  0,  5,  3],
-    [12,  3,  8,  1,  5,  4,  4,  5,  1,  2,  9,  6],
-    [ 9,  4,  6, 12,  5,  3,  9,  5,  6, 12,  4,  3],
-    [12,  5,  5,  5,  5,  4,  4,  5,  5,  5,  5,  6]
-];
-const RESOURCE_MAP = [
-    [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1],
-    [ 2,  0,  1,  0,  0,  1,  1,  0,  0,  1,  0,  2],
-    [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1],
-    [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1],
-    [ 0,  0,  1,  0,  0,  0,  0,  0,  0,  1,  0,  0],
-    [ 0,  0,  1,  0,  0,  0,  0,  0,  0,  1,  0,  0],
-    [ 0,  0,  1,  0,  0,  0,  0,  0,  0,  1,  0,  0],
-    [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1],
-    [ 2,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  2],
-    [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1],
-    [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1]
-];
-const ENTITY_SPEED = 1/20;
 
-let game_score = 0;
-
-function *resource_generator(map) {
-    for (let i = 0; i < map.length; ++i) {
-        for (let j = 0; j < map[i].length; ++j) {
-            let resource;
-            switch (RESOURCE_MAP[i][j]) {
-                case 1:
-                    resource = new Biscuit(new Vector2D([j, i]));
-                    break;
-                case 2:
-                    resource = new Pill(new Vector2D([j, i]));
-                    resource.on('eaten', on_pill_eaten);
-                    break;
-                default:
-                    break;
-            }
-            if (resource) {
-                resource.on('eaten', on_resource_eaten);
-                yield resource;
-            }
-        }
-    }
-}
-
-let maze = Maze.fromMap(MAZE_MAP);
-let ghost_points_coefficient = 0;
-
-let pacman = new Pacman('pacman', new Vector2D([5, 6]), function() {
-    return this.eaten ?  0 : ENTITY_SPEED;
-});
-
-function ghost_speed() {
-    if (pacman.eaten) {
-        return 0;
-    } else if (this.eaten) {
-        return ENTITY_SPEED*2;
-    } else if (this.eatable) {
-        return ENTITY_SPEED/2;
-    }
-    return ENTITY_SPEED;
-}
-
-let blinky = new Ghost(
-    'blinky',
-    '#fd0900',
-    new Vector2D([4, 5]), ghost_speed, {
-    chasing: () => pacman.position,
-    scattering: new Vector2D([maze.columns - 2, -1])
-});
-
-let pinky = new Ghost(
-    'pinky',
-    '#feb8de',
-    new Vector2D([5, 5]), ghost_speed, {
-    chasing: () => {
-        let u = pacman.velocity.unit().mul(4);
-        if (u.equal({x: 0, y: 0})) {
-            u = new Vector2D([4, 0]);
-        }
-        return pacman.position.add(u);
-    },
-    scattering: new Vector2D([1, -1])
-});
-
-let inky = new Ghost(
-    'inky',
-    '#22ffde',
-    new Vector2D([6, 5]), ghost_speed, {
-    chasing: () => {
-        let u = pacman.velocity.unit().mul(2);
-        if (u.equal({x: 0, y: 0})) {
-            u = new Vector2D([2, 0]);
-        }
-        let p = Vector2D.fromPoint(blinky.position, pacman.position.add(u));
-        return u.add(p);
-    },
-    scattering: new Vector2D([maze.columns - 1, maze.rows])
-});
-
-let clyde = new Ghost(
-    'clyde',
-    '#feb846',
-    new Vector2D([7, 5]), ghost_speed, {
-    chasing: () => {
-        let d = pacman.distanceFrom(clyde.position);
-        return d > 8 ? pacman.position : new Vector2D([0, maze.rows]);
-    },
-    scattering: new Vector2D([0, maze.rows])
-});
-
-const [...resources] = resource_generator(RESOURCE_MAP);
-const ghosts = [blinky, pinky, inky, clyde];
-const entities = [maze, ...resources, ...ghosts, pacman];
+const game = new Game('score', 'lifes');
+const pacman = game.pacman;
+const ghosts = game.ghosts;
 
 let move_map = {};
 
@@ -158,7 +37,7 @@ enter_chase_mode = function () {
 };
 
 function position_to_cell(pos) {
-    return  maze.cellAt({
+    return  game.maze.cellAt({
         x: Math.floor(pos.x),
         y: Math.floor(pos.y)
     });
@@ -168,10 +47,10 @@ function ghost_candidate_cells(ghost, current, origin) {
     if (ghost.eaten) {
         let pos = current.position;
         if (pos.equal({x: 5, y: 4}) || pos.equal({x: 6, y: 4})) {
-            return [maze.cellAt(pos.add(Vector2D.SOUTH))];
+            return [game.maze.cellAt(pos.add(Vector2D.SOUTH))];
         }
     }
-    let cells = _.chain(maze.reachableNeighborsOf(current)).pluck(1).value();
+    let cells = _.chain(game.maze.reachableNeighborsOf(current)).pluck(1).value();
     return cells.length > 1 ? _.omit(cells, cell => cell === origin) : cells;
 }
 
@@ -221,9 +100,9 @@ function pacman_next_cell() {
 
     // first try to go in the last requested direction, if direction is not
     // permitted try to continue in the same direction.
-    let cell = maze.reachableNeighbor(current_cell, direction);
+    let cell = game.maze.reachableNeighbor(current_cell, direction);
     if (!cell) {
-        cell = maze.reachableNeighbor(current_cell, pacman.direction);
+        cell = game.maze.reachableNeighbor(current_cell, pacman.direction);
         if (!cell) {
             pacman.direction = new Vector2D();
         }
@@ -271,18 +150,16 @@ function key_down(ev) {
 
 function reset() {
     scheduler.cancelAll();
-    for (let entity of [...ghosts, pacman]) {
+    game.reset();
+    for (let entity of [pacman, ...ghosts]) {
         move_map[entity.name] = {};
-        entity.reset();
     }
     enter_scatter_mode();
     document.addEventListener('keydown', key_down, true);
 }
 
-function on_ghost_eaten(ghost) {
-    ghost_points_coefficient += 1;
-    ghost.eatable = false;
-    game_score += ghost_points_coefficient*ghost.points;
+function on_entity_reset(entity) {
+    move_map[entity.name] = {};
 }
 
 function on_pacman_eaten() {
@@ -290,46 +167,39 @@ function on_pacman_eaten() {
     scheduler.delay(2000, reset);
 }
 
-function on_resource_eaten(resource) {
-    game_score += resource.points;
-}
-
-function on_pill_eaten() {
-    ghost_points_coefficient = 0;
-    for (let ghost of ghosts) {
-        ghost.eatable = true;
-    }
-}
-
 function draw(entity) {
     entity.draw(SCALE);
 }
 
 let init_once = _.once(function() {
-    for (let ghost of ghosts) {
-        ghost.on('eaten', on_ghost_eaten);
+    game.levelUp();
+    for (let entity of [pacman, ...ghosts]) {
+        entity.on('reset', on_entity_reset);
+        if (entity === pacman) {
+            entity.on('eaten', on_pacman_eaten);
+        }
     }
-    pacman.on('eaten', on_pacman_eaten);
     reset();
 });
 
 function run(timestamp) {
+    let pos = pacman.position;
+
     scheduler.update(timestamp);
     init_once();
     graphics.clear();
-    for (let entity of entities) {
-        draw(entity);
-    }
-    for (let ghost of ghosts) {
-        move_ghost(ghost);
-    }
-    let pos = pacman.position;
-    for (let resource of resources) {
+    draw(game.maze);
+    for (let resource of game.resources) {
         if (!resource.eaten && pos.equal(resource.position)) {
             resource.eaten = true;
+        } else {
+            draw(resource);
         }
     }
     for (let ghost of ghosts) {
+        if (!pacman.eaten) {
+            move_ghost(ghost);
+        }
         if (pacman.distanceFrom(ghost.position) < .5) {
             if (ghost.eatable) {
                 ghost.eaten = true;
@@ -337,13 +207,15 @@ function run(timestamp) {
                 pacman.eaten = true;
             }
         }
+        draw(ghost);
     }
     move_pacman();
+    draw(pacman);
     window.requestAnimationFrame(run);
 }
 
 graphics.translate({
-    x: (CANVAS_SIZE.width - SCALE*maze.columns)/2,
-    y: (CANVAS_SIZE.height - SCALE*maze.rows)/2
+    x: (CANVAS_SIZE.width - SCALE*game.maze.columns)/2,
+    y: (CANVAS_SIZE.height - SCALE*game.maze.rows)/2
 });
 window.requestAnimationFrame(run);

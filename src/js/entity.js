@@ -34,6 +34,7 @@ class Entity extends EventEmitter {
     }
     reset() {
         this.eaten = false;
+        this.emit('reset', this);
     }
     draw(scale = 1) {
         /* eslint-disable no-underscore-dangle */
