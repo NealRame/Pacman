@@ -177,6 +177,13 @@ class Game extends EventEmitter {
             }
         };
 
+        let game_start = () => {
+            for (let entity of [...this.ghosts, _pacman]) {
+                entity.freezed = false;
+            }
+            this.emit('game-started');
+        };
+
         let update_score = (points) => {
             _score += points;
             this.emit('score-changed', _score);
@@ -271,6 +278,7 @@ class Game extends EventEmitter {
                 );
             }
             scheduler.cancelAll();
+            scheduler.delay(4000, game_start);
             for (let entity of [...this.ghosts, _pacman]) {
                 entity.reset();
             }

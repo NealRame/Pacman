@@ -6,7 +6,7 @@ class MovingEntity extends Entity {
     constructor(pos = new Vector2D(), speed = 0) {
         super(pos);
         let _direction = new Vector2D(); // eslint-disable-line no-underscore-dangle
-        let _freezed = false; // eslint-disable-line no-underscore-dangle
+        let _freezed = true; // eslint-disable-line no-underscore-dangle
         Object.defineProperty(this, 'direction', {
             enumerable: true,
             get: () => _direction,
@@ -46,7 +46,7 @@ class MovingEntity extends Entity {
         super.reset();
         this.direction = new Vector2D();
         this.position = this.initialPosition;
-        this.freezed = false;
+        this.freezed = true;
     }
 }
 module.exports = MovingEntity;
