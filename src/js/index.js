@@ -15,23 +15,6 @@ const ghosts = game.ghosts;
 
 let move_map = {};
 
-let enter_chase_mode;
-let enter_scatter_mode;
-
-enter_scatter_mode = function () {
-    for (let ghost of ghosts) {
-        ghost.state = 'scattering';
-    }
-    scheduler.delay(7000, enter_chase_mode);
-};
-
-enter_chase_mode = function () {
-    for (let ghost of ghosts) {
-        ghost.state = 'chasing';
-    }
-    scheduler.delay(20000, enter_scatter_mode);
-};
-
 function position_to_cell(pos) {
     return  game.maze.cellAt({
         x: Math.floor(pos.x),
@@ -134,21 +117,8 @@ function on_direction_changed(direction) {
     }
 }
 
-function reset() {
-    scheduler.cancelAll();
-    game.reset();
-    for (let entity of [pacman, ...ghosts]) {
-        move_map[entity.name] = {};
-    }
-    enter_scatter_mode();
-}
-
 function on_entity_reset(entity) {
     move_map[entity.name] = {};
-}
-
-function on_pacman_eaten() {
-    scheduler.delay(2000, reset);
 }
 
 function draw(entity) {
@@ -168,11 +138,11 @@ let init_once = _.once(function() {
     game.levelUp();
     for (let entity of [pacman, ...ghosts]) {
         entity.on('reset', on_entity_reset);
-        if (entity === pacman) {
-            entity.on('eaten', on_pacman_eaten);
-        }
+        // if (entity === pacman) {
+        //     entity.on('eaten', on_pacman_eaten);
+        // }
     }
-    reset();
+    game.reset();
 });
 
 function run(timestamp) {

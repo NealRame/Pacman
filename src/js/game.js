@@ -1,8 +1,9 @@
 let _ = require('underscore');
-let EventEmitter = require('events').EventEmitter;
-let Maze = require('./maze');
+var scheduler = require('./scheduler');
 let Biscuit = require('./biscuit');
+let EventEmitter = require('events').EventEmitter;
 let Ghost = require('./ghost');
+let Maze = require('./maze');
 let Pacman = require('./pacman');
 let Pill = require('./pill');
 let Vector2D = require('./vector2d');
@@ -50,7 +51,7 @@ function create_resources(map, on_resource_eaten) {
                     break;
             }
             if (resource) {
-                resource.on('eaten', on_resource_eaten);
+                resource.once('eaten', on_resource_eaten);
             }
             return resource;
         });
@@ -167,17 +168,11 @@ class Game extends EventEmitter {
 
         let update_score = (points) => {
             _score += points;
-            if (_resources.size === 0) {
-                game_over();
-            }
             this.emit('score-changed', _score);
         };
 
         let update_life = (lifes) => {
             _lifes = Math.max(_lifes + lifes, 0);
-            if (_lifes === 0) {
-                game_over();
-            }
             this.emit('life-count-changed', _lifes);
         };
 
@@ -185,6 +180,20 @@ class Game extends EventEmitter {
             _ghost_points_coefficient += 1;
             ghost.eatable = false;
             update_score(_ghost_points_coefficient*ghost.points);
+        };
+
+        let on_pacman_eaten = () => {
+            for (let entity of [_pacman, ...this.ghosts]) {
+                entity.freezed = true;
+            }
+            scheduler.delay(2000, () => {
+                if (_lifes === 0) {
+                    game_over();
+                } else {
+                    update_life(-1);
+                    this.reset();
+                }
+            });
         };
 
         let on_resource_eaten = (resource) => {
@@ -196,12 +205,13 @@ class Game extends EventEmitter {
                     ghost.eatable = true;
                 }
             }
+            if (_resources.size === 0) {
+                for (let entity of [_pacman, ...this.ghosts]) {
+                    entity.freezed = true;
+                }
+                game_over();
+            }
         };
-
-        _pacman.on('eaten', () => update_life(-1));
-        for (let ghost of this.ghosts) {
-            ghost.on('eaten', on_ghost_eaten);
-        }
 
         this.levelUp = () => {
             _resources = create_resources(
@@ -212,11 +222,37 @@ class Game extends EventEmitter {
             this.emit('level-up', _level);
         };
 
+        let enter_chase_mode;
+        let enter_scatter_mode;
+
+        enter_scatter_mode = () => {
+            for (let ghost of this.ghosts) {
+                ghost.state = 'scattering';
+            }
+            scheduler.delay(7000, enter_chase_mode);
+        };
+
+        enter_chase_mode = () => {
+            for (let ghost of this.ghosts) {
+                ghost.state = 'chasing';
+            }
+            scheduler.delay(20000, enter_scatter_mode);
+        };
+
         this.reset = () => {
+            scheduler.cancelAll();
             for (let entity of [...this.ghosts, _pacman]) {
                 entity.reset();
             }
+            enter_scatter_mode();
         };
+
+        for (let entity of [_pacman, ...this.ghosts]) {
+            entity.on('eaten', entity === _pacman
+                ? on_pacman_eaten
+                : on_ghost_eaten
+            );
+        }
     }
 }
 
