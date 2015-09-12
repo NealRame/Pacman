@@ -1,41 +1,43 @@
+$ui-area-width: 480px;
+
 body {
     background-color: #000;
     color: #e4e4f4;
     font-family: 'VT323', ;
     margin: 0;
 }
-#game-scores-area {
+#scores-area {
     margin: 0 auto;
     overflow: auto;
     text-align: center;
-    width: 480px;
+    width: $ui-area-width;
     h1 {
         text-transform: uppercase;
         margin: .25em 0;
     }
-    #game-score-area {
+    .score-item {
         float: left;
-    }
-    #game-high-score-area {
-        float: right;
-    }
-    #score, #high-score {
-        font-size: 1.75em;
-        font-weight: bold;
-        margin: 0;
+        width: $ui-area-width/3;
+        p {
+            font-size: 1.75em;
+            font-weight: bold;
+            margin: 0;
+        }
     }
 }
 #graphics {
     display: block;
     margin: 0 auto;
 }
-#game-controls-area {
+#controls-area {
     margin: 0 auto;
-    width: 480px;
-    #lifes {
+    width: $ui-area-width;
+    #lifes, #bonus {
         float: left;
         overflow: auto;
-        width: 240px;
+        width: $ui-area-width/2;
+    }
+    #lifes {
         .life {
             display: inline-block;
             &::before {
@@ -43,10 +45,5 @@ body {
                 margin: 4px;
             }
         }
-    }
-    #bonus {
-        float: right;
-        overflow: auto;
-        width: 240px;
     }
 }
