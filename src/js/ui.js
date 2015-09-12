@@ -9,7 +9,7 @@ const KEY_RIGHT = 39;
 const KEY_DOWN = 40;
 
 function create_life_elements(count) {
-    return _(count).times(() => {
+    return _(Math.max(count, 0)).times(() => {
         let life = document.createElement('span');
         life.className = 'life';
         return life;

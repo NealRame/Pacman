@@ -126,23 +126,28 @@ function draw(entity) {
 }
 
 let init_once = _.once(function() {
-    ui.on('direction-changed', on_direction_changed);
-    ui.score = game.score;
+    for (let entity of [pacman, ...ghosts]) {
+        entity.on('reset', on_entity_reset);
+    }
     game.on('score-changed', function(score) {
         ui.score = score;
     });
-    ui.lifes = game.lifes;
     game.on('life-count-changed', function(life_count) {
         ui.lifes = life_count;
     });
+    game.on('game-over', function() {
+        if (game.lifes < 0) {
+            game.reset();
+        } else {
+            game.levelUp();
+        }
+    });
+    game.on('reset', function() {
+        ui.score = game.score;
+        ui.lifes = game.lifes;
+    });
     game.levelUp();
-    for (let entity of [pacman, ...ghosts]) {
-        entity.on('reset', on_entity_reset);
-        // if (entity === pacman) {
-        //     entity.on('eaten', on_pacman_eaten);
-        // }
-    }
-    game.reset();
+    ui.on('direction-changed', on_direction_changed);
 });
 
 function run(timestamp) {

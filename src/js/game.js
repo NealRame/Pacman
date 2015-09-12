@@ -162,7 +162,7 @@ class Game extends EventEmitter {
         let game_over = () => {
             if (!_game_over) {
                 _game_over = true;
-                this.emit('game-over', this);
+                this.emit('game-over');
             }
         };
 
@@ -172,7 +172,7 @@ class Game extends EventEmitter {
         };
 
         let update_life = (lifes) => {
-            _lifes = Math.max(_lifes + lifes, 0);
+            _lifes += lifes;
             this.emit('life-count-changed', _lifes);
         };
 
@@ -186,11 +186,11 @@ class Game extends EventEmitter {
             for (let entity of [_pacman, ...this.ghosts]) {
                 entity.freezed = true;
             }
+            update_life(-1);
             scheduler.delay(2000, () => {
-                if (_lifes === 0) {
+                if (_lifes < 0) {
                     game_over();
                 } else {
-                    update_life(-1);
                     this.reset();
                 }
             });
@@ -219,6 +219,7 @@ class Game extends EventEmitter {
                 on_resource_eaten
             );
             _level += 1;
+            this.reset();
             this.emit('level-up', _level);
         };
 
@@ -240,11 +241,24 @@ class Game extends EventEmitter {
         };
 
         this.reset = () => {
+            if (_game_over) {
+                _game_over = false;
+                if (_lifes < 0) {
+                    _level = 0;
+                    _score = 0;
+                    _lifes = 2;
+                }
+                _resources = create_resources(
+                    RESOURCE_MAP,
+                    on_resource_eaten
+                );
+            }
             scheduler.cancelAll();
             for (let entity of [...this.ghosts, _pacman]) {
                 entity.reset();
             }
             enter_scatter_mode();
+            this.emit('reset');
         };
 
         for (let entity of [_pacman, ...this.ghosts]) {
