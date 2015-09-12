@@ -140,7 +140,7 @@ exports.mirrorV = function() {
 
 exports.rotate = function(angle) {
     context.rotate(angle);
-}
+};
 
 exports.push = function() {
     snap_by_stack.push(snap_by);
