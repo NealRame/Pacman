@@ -2,11 +2,13 @@ body {
     background-color: #000;
     color: #e4e4f4;
     font-family: 'VT323', ;
+    margin: 0;
 }
-#score-area {
+#game-score-area {
     text-align: center;
     h1 {
         text-transform: uppercase;
+        margin: .25em 0;
     }
     #score {
         font-size: 1.75em;
@@ -17,4 +19,25 @@ body {
 #graphics {
     display: block;
     margin: 0 auto;
+}
+#game-controls-area {
+    margin: 0 auto;
+    width: 480px;
+    #lifes {
+        float: left;
+        overflow: auto;
+        width: 240px;
+        .life {
+            display: inline-block;
+            &::before {
+                content: url(images/pacman.png);
+                margin: 4px;
+            }
+        }
+    }
+    #bonus {
+        float: right;
+        overflow: auto;
+        width: 240px;
+    }
 }
