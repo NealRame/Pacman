@@ -2,14 +2,10 @@ let _ = require('underscore');
 
 var scheduler = require('./scheduler');
 let Game = require('./game');
-let functional = require('./functional');
 let graphics = require('./graphics');
+let ui = require('./ui');
 let Vector2D = require('./vector2d');
 
-const KEY_LEFT = 37;
-const KEY_UP = 38;
-const KEY_RIGHT = 39;
-const KEY_DOWN = 40;
 const CANVAS_SIZE = graphics.size();
 const SCALE = 40;
 
@@ -128,23 +124,13 @@ function move_pacman() {
     }
 }
 
-let key_to_direction = functional.dispatch(
-    ev => ev.keyCode === KEY_LEFT ?  Vector2D.WEST  : null,
-    ev => ev.keyCode === KEY_RIGHT ? Vector2D.EAST  : null,
-    ev => ev.keyCode === KEY_UP ?    Vector2D.NORTH : null,
-    ev => ev.keyCode === KEY_DOWN ?  Vector2D.SOUTH : null
-);
-
-function key_down(ev) {
-    let direction = key_to_direction(ev);
-    if (direction) {
+function on_direction_changed(direction) {
+    if (!pacman.eaten) {
         move_map.pacman = move_map.pacman || {};
         if (direction.add(pacman.direction).isNull()) {
             delete move_map.pacman.next_cell;
         }
         move_map.pacman.direction = direction;
-        ev.preventDefault();
-        ev.stopPropagation();
     }
 }
 
@@ -155,7 +141,6 @@ function reset() {
         move_map[entity.name] = {};
     }
     enter_scatter_mode();
-    document.addEventListener('keydown', key_down, true);
 }
 
 function on_entity_reset(entity) {
@@ -163,7 +148,6 @@ function on_entity_reset(entity) {
 }
 
 function on_pacman_eaten() {
-    document.removeEventListener('keydown', key_down);
     scheduler.delay(2000, reset);
 }
 
@@ -172,6 +156,15 @@ function draw(entity) {
 }
 
 let init_once = _.once(function() {
+    ui.on('direction-changed', on_direction_changed);
+    ui.score = game.score;
+    game.on('score-changed', function(score) {
+        ui.score = score;
+    });
+    ui.lifes = game.lifes;
+    game.on('life-count-changed', function(life_count) {
+        ui.lifes = life_count;
+    });
     game.levelUp();
     for (let entity of [pacman, ...ghosts]) {
         entity.on('reset', on_entity_reset);

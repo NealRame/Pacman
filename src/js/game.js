@@ -35,15 +35,7 @@ const RESOURCE_MAP = [
 ];
 const ENTITY_SPEED = 1/20;
 
-function create_life_elements(count) {
-    return _(count).times(() => {
-        let life = document.createElement('span');
-        life.className = 'life';
-        return life;
-    });
-}
-
-function create_resources(map, on_pill_eaten, on_resource_eaten) {
+function create_resources(map, on_resource_eaten) {
     let resources = _(map.length).times((i) => {
         return _(map[i].length).times((j) => {
             let resource;
@@ -53,7 +45,6 @@ function create_resources(map, on_pill_eaten, on_resource_eaten) {
                     break;
                 case 2:
                     resource = new Pill(new Vector2D([j, i]));
-                    resource.on('eaten', on_pill_eaten);
                     break;
                 default:
                     break;
@@ -196,16 +187,15 @@ class Game extends EventEmitter {
             update_score(_ghost_points_coefficient*ghost.points);
         };
 
-        let on_pill_eaten = () => {
-            _ghost_points_coefficient = 0;
-            for (let ghost of this.ghosts()) {
-                ghost.eatable = true;
-            }
-        };
-
         let on_resource_eaten = (resource) => {
             _resources.delete(resource);
             update_score(resource.points);
+            if (resource instanceof Pill) {
+                _ghost_points_coefficient = 0;
+                for (let ghost of this.ghosts) {
+                    ghost.eatable = true;
+                }
+            }
         };
 
         _pacman.on('eaten', () => update_life(-1));
@@ -216,7 +206,6 @@ class Game extends EventEmitter {
         this.levelUp = () => {
             _resources = create_resources(
                 RESOURCE_MAP,
-                on_pill_eaten,
                 on_resource_eaten
             );
             _level += 1;
