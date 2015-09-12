@@ -74,9 +74,9 @@ class Game extends EventEmitter {
 
         /* eslint-disable no-underscore-dangle */
         let _maze = Maze.fromMap(MAZE_MAP);
-        let _game_over = false;
-        let _level = 0;
+        let _game_over = true;
         let _score = 0;
+        let _level = 1;
         let _lifes = 2;
         let _ghost_points_coefficient = 0;
         let _resources;
@@ -244,8 +244,8 @@ class Game extends EventEmitter {
             if (_game_over) {
                 _game_over = false;
                 if (_lifes < 0) {
-                    _level = 0;
                     _score = 0;
+                    _level = 1;
                     _lifes = 2;
                 }
                 _resources = create_resources(

@@ -146,7 +146,7 @@ let init_once = _.once(function() {
         ui.score = game.score;
         ui.lifes = game.lifes;
     });
-    game.levelUp();
+    game.reset();
     ui.on('direction-changed', on_direction_changed);
 });
 
