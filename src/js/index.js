@@ -132,6 +132,10 @@ let init_once = _.once(function() {
     game.on('score-changed', function(score) {
         ui.score = score;
     });
+    game.on('high-score-changed', function(score) {
+        ui.highScore = score;
+    });
+
     game.on('life-count-changed', function(life_count) {
         ui.lifes = life_count;
     });

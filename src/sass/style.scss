@@ -4,13 +4,22 @@ body {
     font-family: 'VT323', ;
     margin: 0;
 }
-#game-score-area {
+#game-scores-area {
+    margin: 0 auto;
+    overflow: auto;
     text-align: center;
+    width: 480px;
     h1 {
         text-transform: uppercase;
         margin: .25em 0;
     }
-    #score {
+    #game-score-area {
+        float: left;
+    }
+    #game-high-score-area {
+        float: right;
+    }
+    #score, #high-score {
         font-size: 1.75em;
         font-weight: bold;
         margin: 0;

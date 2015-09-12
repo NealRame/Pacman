@@ -24,6 +24,8 @@ let key_to_direction = functional.dispatch(
 );
 
 let game_score_field = document.getElementById('score');
+let game_high_score_field = document.getElementById('high-score');
+
 let game_lifes_field = document.getElementById('lifes');
 
 class Ui extends EventEmitter {
@@ -40,6 +42,9 @@ class Ui extends EventEmitter {
     }
     set score(score) {
         game_score_field.innerHTML = `${score}`;
+    }
+    set highScore(high_score) {
+        game_high_score_field.innerHTML = `${high_score}`;
     }
     set lifes(life_count) {
         game_lifes_field.innerHTML = '';

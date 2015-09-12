@@ -75,6 +75,7 @@ class Game extends EventEmitter {
         /* eslint-disable no-underscore-dangle */
         let _maze = Maze.fromMap(MAZE_MAP);
         let _game_over = true;
+        let _high_score = 0;
         let _score = 0;
         let _level = 1;
         let _lifes = 2;
@@ -159,6 +160,11 @@ class Game extends EventEmitter {
             get: () => _score
         });
 
+        Object.defineProperty(this, 'highScore', {
+            enumerable: true,
+            get: () => _high_score
+        });
+
         let game_over = () => {
             if (!_game_over) {
                 _game_over = true;
@@ -169,6 +175,10 @@ class Game extends EventEmitter {
         let update_score = (points) => {
             _score += points;
             this.emit('score-changed', _score);
+            if (_score > _high_score) {
+                _high_score = _score;
+                this.emit('high-score-changed', _high_score);
+            }
         };
 
         let update_life = (lifes) => {
