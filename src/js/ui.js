@@ -51,7 +51,6 @@ class Ui extends EventEmitter {
         game_level_field.innerHTML = `${level}`;
     }
     set highScore(high_score) {
-        console.log(high_score);
         game_high_score_field.innerHTML = `${high_score}`;
     }
     set score(score) {
