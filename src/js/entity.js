@@ -5,8 +5,10 @@ const Vector2D = require('./vector2d');
 class Entity extends EventEmitter {
     constructor(pos = new Vector2D()) {
         super();
-        let _eaten = false;  // eslint-disable-line no-underscore-dangle
-        let _position = pos; // eslint-disable-line no-underscore-dangle
+        /* eslint-disable no-underscore-dangle */
+        let _eaten = false;
+        let _position = pos;
+        /* eslint-enable no-underscore-dangle */
         Object.defineProperty(this, 'x', {
             enumerable: true,
             get: () => _position.x,
