@@ -1,7 +1,8 @@
 require('browsernizr/test/audio');
 
-let _ = require('underscore');
-let Modernizr = require('browsernizr');
+const _ = require('underscore');
+const Modernizr = require('browsernizr');
+const existy = require('./functional').existy;
 
 const SOUND_EXTENSION = Modernizr.audio.ogg ? 'ogg' : 'mp3';
 const SOUND_PREFIX = 'assets/sounds/';
@@ -32,12 +33,27 @@ function load_audio_fx(fx) {
 
 class AudioFX {
     constructor() {
-        let _fx_map; // eslint-disable-line no-underscore-dangle
+        /* eslint-disable no-underscore-dangle */
+        let _fx_map;
+        let _muted = false;
+        /* eslint-enable no-underscore-dangle */
+
+        Object.defineProperty(this, 'muted', {
+            enumerable: true,
+            get: () => _muted,
+            set: (muted) => {
+                if ((_muted = muted)) {
+                    for (let audio of _fx_map.values()) {
+                        audio.pause();
+                        audio.currentTime = 0;
+                    }
+                }
+            }
+        });
 
         this.trigger = (fx) => {
-            let audio = _fx_map.get(fx);
-            if (audio) {
-                console.log(`will trigger ${fx}`);
+            const audio = _fx_map.get(fx);
+            if (!_muted && existy(audio)) {
                 audio.pause();
                 audio.currentTime = 0;
                 audio.play();
@@ -52,6 +68,9 @@ class AudioFX {
                 })
                 .catch(( ) => false);
         };
+    }
+    toggle() {
+        this.muted = !this.muted;
     }
 }
 

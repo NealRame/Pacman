@@ -118,6 +118,10 @@ function on_direction_changed(direction) {
     }
 }
 
+function on_toggle_sound_mute() {
+    audio.toggle();
+}
+
 function on_entity_reset(entity) {
     move_map[entity.name] = {};
 }
@@ -161,6 +165,7 @@ let init_once = _.once(function() {
     });
     game.reset();
     ui.on('direction-changed', on_direction_changed);
+    ui.on('toggle-sound-mute', on_toggle_sound_mute);
 });
 
 function run(timestamp) {
