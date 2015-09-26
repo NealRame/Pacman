@@ -18,8 +18,8 @@ body {
             margin: .25em 0;
         }
         .score-item {
-            float: left;
-            width: $ui-area-width/3;
+            display: inline-block;
+            margin: 0 2em;
             p {
                 font-size: 1.75em;
                 font-weight: bold;
