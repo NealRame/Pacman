@@ -2,13 +2,13 @@ let _ = require('underscore');
 
 var scheduler = require('./scheduler');
 let Game = require('./game');
+let audio = require('./audio');
 let graphics = require('./graphics');
 let ui = require('./ui');
 let Vector2D = require('./vector2d');
 
 const CANVAS_SIZE = graphics.size();
-const SCALE = 40;
-
+const SCALE = 16;
 const game = new Game('score', 'lifes');
 const pacman = game.pacman;
 const ghosts = game.ghosts;
@@ -29,7 +29,7 @@ function ghost_candidate_cells(ghost, current, origin) {
             return [game.maze.cellAt(pos.add(Vector2D.SOUTH))];
         }
     }
-    let cells = _.chain(game.maze.reachableNeighborsOf(current)).pluck(1).value();
+    let cells = current.reachableNeighborhood();
     return cells.length > 1 ? _.omit(cells, cell => cell === origin) : cells;
 }
 
@@ -79,9 +79,10 @@ function pacman_next_cell() {
 
     // first try to go in the last requested direction, if direction is not
     // permitted try to continue in the same direction.
-    let cell = game.maze.reachableNeighbor(current_cell, direction);
+    // let cell = game.maze.reachableNeighbor(current_cell, direction);
+    let cell = current_cell.reachableNeighborTo(direction);
     if (!cell) {
-        cell = game.maze.reachableNeighbor(current_cell, pacman.direction);
+        cell = current_cell.reachableNeighborTo(pacman.direction);
         if (!cell) {
             pacman.direction = new Vector2D();
         }
@@ -194,8 +195,11 @@ function run(timestamp) {
     window.requestAnimationFrame(run);
 }
 
-graphics.translate({
-    x: (CANVAS_SIZE.width - SCALE*game.maze.columns)/2,
-    y: (CANVAS_SIZE.height - SCALE*game.maze.rows)/2
+audio.initialize().then((status) => {
+    console.log(`audio.initialize: ${status}`);
+    graphics.translate({
+        x: (CANVAS_SIZE.width - SCALE*game.maze.columns)/2,
+        y: (CANVAS_SIZE.height - SCALE*game.maze.rows)/2
+    });
+    window.requestAnimationFrame(run);
 });
-window.requestAnimationFrame(run);

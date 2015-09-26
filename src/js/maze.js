@@ -3,21 +3,8 @@ var functional = require('./functional');
 var graphics = require('./graphics');
 var Vector2D = require('./vector2d');
 
-let vector_to_cardinal_direction = functional.dispatch(
-    v => v.x === 0 && v.y < 0 ? 'north' : null,
-    v => v.x === 0 && v.y > 0 ? 'south' : null,
-    v => v.y === 0 && v.x < 0 ?  'west' : null,
-    v => v.y === 0 && v.x > 0 ?  'east' : null
-);
-let opposed_cardinal_direction = functional.dispatch(
-    direction => direction === 'north' ? 'south' : null,
-    direction => direction === 'south' ? 'north' : null,
-    direction => direction === 'east'  ? 'west'  : null,
-    direction => direction === 'west'  ? 'east'  : null
-);
-
 class Cell {
-    constructor(column, row, {north = false, east = false, south = false, west = false } = {}) {
+    constructor(column, row, maze, open = false) {
         Object.defineProperty(this, 'column', {
             enumerable: true,
             get: () => column
@@ -26,47 +13,51 @@ class Cell {
             enumerable: true,
             get: () => row
         });
-        this.north = north;
-        this.east  = east;
-        this.south = south;
-        this.west  = west;
-    }
-    isOpen() {
-        return this.north || this.east || this.south || this.west;
-    }
-    open(direction) {
-        this[direction] = true;
-    }
-    close(direction) {
-        this[direction] = false;
+        Object.defineProperty(this, 'maze', {
+            enumerable: true,
+            get: () => maze
+        });
+        this.tile = null;
+        this.isOpen = () => open;
+        this.open = () => {
+            open = true;
+        };
+        this.close = () => {
+            open = false;
+        };
     }
     get position() {
         return new Vector2D([this.column, this.row]);
     }
-}
-
-function draw_cell(cell) {
-    var dispatch = {
-        north: function() {
-            let p = cell.position;
-            return [p, p.add({x: 1, y: 0})];
-        },
-        east: function() {
-            let p = cell.position.add({x: 1, y: 0});
-            return [p, p.add({x: 0, y: 1})];
-        },
-        south: function() {
-            let p = cell.position.add({x: 0, y: 1});
-            return [p, p.add({x: 1, y: 0})];
-        },
-        west: function() {
-            let p = cell.position;
-            return [p, p.add({x: 0, y: 1})];
+    neighborTo(direction) {
+        if (direction) {
+            return this.maze.cellAt(this.position.add(direction));
         }
-    };
-    for (let direction of ['north', 'east', 'south', 'west']) {
-        if (!cell[direction]) {
-            graphics.drawLine(...dispatch[direction]());
+    }
+    reachableNeighborTo(direction) {
+        let neighbor = this.neighborTo(direction);
+        if (neighbor && neighbor.isOpen()) {
+            return neighbor;
+        }
+    }
+    neighborhood() {
+        return _.chain([Vector2D.NORTH, Vector2D.EAST, Vector2D.SOUTH, Vector2D.WEST])
+            .map(direction => this.neighborTo(direction))
+            .compact()
+            .value();
+    }
+    reachableNeighborhood() {
+        return _.chain([Vector2D.NORTH, Vector2D.EAST, Vector2D.SOUTH, Vector2D.WEST])
+            .map(direction => this.reachableNeighborTo(direction))
+            .compact()
+            .value();
+    }
+    draw() {
+        if (!this.isOpen() && this.tile) {
+            graphics.push();
+            graphics.translate(this.position);
+            graphics.drawPath(this.tile);
+            graphics.pop();
         }
     }
 }
@@ -76,7 +67,7 @@ class Maze {
         var cells = [];
         for (let row of functional.range(0, rows)) {
             for (let column of functional.range(0, columns)) {
-                cells.push(new Cell(column, row));
+                cells.push(new Cell(column, row, this));
             }
         }
         Object.defineProperty(this, 'columns', {
@@ -92,73 +83,49 @@ class Maze {
                 return cells[row*this.columns + column];
             }
         };
-        this.draw = (scale = 1) => {
-            graphics.push();
-            graphics.scale(scale);
-            graphics.setPen({
-                color: '#2122ff',
-                width: 2/scale
-            });
-            for (let cell of cells) {
-                draw_cell(cell);
-            }
-            graphics.pop();
-        };
         this[Symbol.iterator] = function*() {
             for (let cell of cells) {
                 yield cell;
             }
         };
     }
-    neighbor(cell, direction) {
-        if (direction) {
-            return this.cellAt(cell.position.add(direction));
+    draw(scale = 1) {
+        graphics.push();
+        graphics.scale(scale);
+
+        // graphics.setPen({
+        //     color: '#999',
+        //     width: 1/scale
+        // });
+        //
+        // for (let i = 0; i < this.rows; ++i) {
+        //     graphics.drawLine({x: 0, y: i}, {x: this.columns, y: i});
+        // }
+        //
+        // for (let i = 0; i < this.columns; ++i) {
+        //     graphics.drawLine({x: i, y: 0}, {x: i, y: this.rows});
+        // }
+
+        graphics.setPen({
+            color: '#2122ff',
+            width: 2/scale
+        });
+        for (let cell of this) {
+            cell.draw();
         }
+        graphics.pop();
     }
-    reachableNeighbor(cell, direction) {
-        if (direction) {
-            let cardinal_direction = vector_to_cardinal_direction(direction);
-            if (cardinal_direction && cell[cardinal_direction]) {
-                return this.neighbor(cell, direction);
-            }
-        }
-    }
-    neighborsOf(cell) {
-        return _.filter([
-            ['north', this.cellAt(cell.position.add(Vector2D.NORTH))],
-            ['east',  this.cellAt(cell.position.add(Vector2D.EAST))],
-            ['south', this.cellAt(cell.position.add(Vector2D.SOUTH))],
-            ['west',  this.cellAt(cell.position.add(Vector2D.WEST))]
-        ], elt => functional.existy(elt[1]));
-    }
-    reachableNeighborsOf(cell) {
-        return _.filter(this.neighborsOf(cell), elt => cell[elt[0]]);
-    }
-    static random(columns, rows) {
-        let maze = new Maze(columns, rows);
-        function random_aux(cell) {
-            _.chain(maze.neighborsOf(cell))
-                .shuffle()
-                .object()
-                .each(function(neighbor, direction) {
-                    if (!neighbor.isOpen()) {
-                        cell.open(direction);
-                        neighbor.open(opposed_cardinal_direction(direction));
-                        random_aux(neighbor);
-                    }
-                });
-        }
-        random_aux(maze.cellAt(0, 0));
-        return maze;
-    }
-    static fromMap(map) {
-        let maze = new Maze(map[0].length, map.length);
+    static load(data) {
+        let maze = new Maze(data.columns, data.rows);
+        let tiles = data.tiles.map((path) => new Path2D(path));
         for (let cell of maze) {
-            let flag = map[cell.row][cell.column];
-            cell.north = (flag & 0x01) === 0;
-            cell.east  = (flag & 0x02) === 0;
-            cell.south = (flag & 0x04) === 0;
-            cell.west  = (flag & 0x08) === 0;
+            let wall_tile_index = data.topography[cell.row][cell.column];
+            if (wall_tile_index != null) {
+                cell.close();
+                cell.tile = tiles[wall_tile_index];
+            } else {
+                cell.open();
+            }
         }
         return maze;
     }

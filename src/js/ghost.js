@@ -32,9 +32,11 @@ const INNER_GHOST_EYE = new Path2D(`
 class Ghost extends(MovingEntity) {
     constructor(name, color = '#222', pos = new Vector2D(), speed = 0., behavior = {}) {
         super(pos, speed);
-        let _color = color;   // eslint-disable-line no-underscore-dangle
-        let _eatable = false; // eslint-disable-line no-underscore-dangle
-        let _task_id = null;  // eslint-disable-line no-underscore-dangle
+        /* eslint-disable no-underscore-dangle */
+        let _color = color;
+        let _eatable = false;
+        let _task_id = null;
+        /* eslint-enable no-underscore-dangle */
         Object.defineProperty(this, 'name', {
           enumerable: true,
           get: () => name
@@ -99,8 +101,8 @@ class Ghost extends(MovingEntity) {
         let eye_direction = this.velocity.mul(1/(15*this.speed));
 
         graphics.push();
-        graphics.translate({x: .1, y: .1});
-        graphics.scale(0.8);
+        graphics.translate({x: -.4, y: -.4});
+        graphics.scale(1.8);
 
         graphics.setPen({
             width: 1/scale
@@ -111,7 +113,6 @@ class Ghost extends(MovingEntity) {
                 color: this.color
             });
             graphics.fillPath(GHOST_BODY);
-            graphics.drawPath(GHOST_BODY);
         }
 
         graphics.translate(new Vector2D([9/32, 13/32]));

@@ -1,46 +1,22 @@
 let _ = require('underscore');
-var scheduler = require('./scheduler');
+let audio = require('./audio');
 let Biscuit = require('./biscuit');
 let EventEmitter = require('events').EventEmitter;
 let Ghost = require('./ghost');
 let Maze = require('./maze');
 let Pacman = require('./pacman');
 let Pill = require('./pill');
+let scheduler = require('./scheduler');
 let Vector2D = require('./vector2d');
 
-const MAZE_MAP = [
-    [ 9,  5,  1,  5,  5,  3,  9,  5,  5,  1,  5,  3],
-    [10, 15, 10, 13,  7, 10, 10, 13,  7, 10, 15, 10],
-    [ 8,  5,  0,  1,  5,  4,  4,  5,  1,  0,  5,  2],
-    [12,  5,  2, 12,  5,  3,  9,  5,  6,  8,  5,  6],
-    [ 5,  7, 10,  9,  5,  4,  4,  5,  3, 10, 13,  5],
-    [ 5,  5,  0,  2, 13,  4,  4,  7,  8,  0,  5,  5],
-    [ 5,  7, 10,  8,  5,  5,  5,  5,  2, 10, 13,  5],
-    [ 9,  5,  0,  4,  5,  3,  9,  5,  4,  0,  5,  3],
-    [12,  3,  8,  1,  5,  4,  4,  5,  1,  2,  9,  6],
-    [ 9,  4,  6, 12,  5,  3,  9,  5,  6, 12,  4,  3],
-    [12,  5,  5,  5,  5,  4,  4,  5,  5,  5,  5,  6]
-];
-const RESOURCE_MAP = [
-    [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1],
-    [ 2,  0,  1,  0,  0,  1,  1,  0,  0,  1,  0,  2],
-    [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1],
-    [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1],
-    [ 0,  0,  1,  0,  0,  0,  0,  0,  0,  1,  0,  0],
-    [ 0,  0,  1,  0,  0,  0,  0,  0,  0,  1,  0,  0],
-    [ 0,  0,  1,  0,  0,  0,  0,  0,  0,  1,  0,  0],
-    [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1],
-    [ 2,  1,  1,  1,  1,  0,  1,  1,  1,  1,  1,  2],
-    [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1],
-    [ 1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1]
-];
-const ENTITY_SPEED = 1/20;
+const MAZE_DATA = require('./maze-data.json');
+const ENTITY_SPEED = 1/10;
 
-function create_resources(map, on_resource_eaten) {
-    let resources = _(map.length).times((i) => {
-        return _(map[i].length).times((j) => {
+function init_resources(on_resource_eaten) {
+    let resources = _(MAZE_DATA.rows).times((i) => {
+        return _(MAZE_DATA.columns).times((j) => {
             let resource;
-            switch (map[i][j]) {
+            switch (MAZE_DATA.resources[i][j]) {
                 case 1:
                     resource = new Biscuit(new Vector2D([j, i]));
                     break;
@@ -73,7 +49,7 @@ class Game extends EventEmitter {
         super();
 
         /* eslint-disable no-underscore-dangle */
-        let _maze = Maze.fromMap(MAZE_MAP);
+        let _maze = Maze.load(MAZE_DATA);
         let _game_over = true;
         let _high_score = 0;
         let _score = 0;
@@ -81,20 +57,20 @@ class Game extends EventEmitter {
         let _lifes = 2;
         let _ghost_points_coefficient = 0;
         let _resources;
-        let _pacman = new Pacman('pacman', new Vector2D([5, 8]), function() {
+        let _pacman = new Pacman('pacman', new Vector2D([13, 23]), function() {
             return this.eaten ?  0 : ENTITY_SPEED;
         });
         let _blinky = new Ghost(
             'blinky',
             '#fd0900',
-            new Vector2D([4, 5]), ghost_speed, {
+            new Vector2D([13, 11]), ghost_speed, {
             chasing: () => _pacman.position,
             scattering: new Vector2D([_maze.columns - 2, -1])
         });
         let _pinky = new Ghost(
             'pinky',
             '#feb8de',
-            new Vector2D([5, 5]), ghost_speed, {
+            new Vector2D([11, 13]), ghost_speed, {
             chasing: () => {
                 let u = _pacman.velocity.unit().mul(4);
                 if (u.equal({x: 0, y: 0})) {
@@ -107,7 +83,7 @@ class Game extends EventEmitter {
         let _inky = new Ghost(
             'inky',
             '#22ffde',
-            new Vector2D([6, 5]), ghost_speed, {
+            new Vector2D([13, 13]), ghost_speed, {
             chasing: () => {
                 let u = _pacman.velocity.unit().mul(2);
                 if (u.equal({x: 0, y: 0})) {
@@ -121,7 +97,7 @@ class Game extends EventEmitter {
         let _clyde = new Ghost(
             'clyde',
             '#feb846',
-            new Vector2D([7, 5]), ghost_speed, {
+            new Vector2D([15, 13]), ghost_speed, {
             chasing: () => {
                 let d = _pacman.distanceFrom(_clyde.position);
                 return d > 8 ? _pacman.position : new Vector2D([0, _maze.rows]);
@@ -222,10 +198,13 @@ class Game extends EventEmitter {
             _resources.delete(resource);
             update_score(resource.points);
             if (resource instanceof Pill) {
+                audio.trigger('eat-fruit');
                 _ghost_points_coefficient = 0;
                 for (let ghost of this.ghosts) {
                     ghost.eatable = true;
                 }
+            } else {
+                audio.trigger('eat-dot');
             }
             if (_resources.size === 0) {
                 for (let entity of [_pacman, ...this.ghosts]) {
@@ -238,10 +217,7 @@ class Game extends EventEmitter {
         };
 
         this.levelUp = () => {
-            _resources = create_resources(
-                RESOURCE_MAP,
-                on_resource_eaten
-            );
+            _resources = init_resources(on_resource_eaten);
             _level += 1;
             this.reset();
             this.emit('level-up', _level);
@@ -272,12 +248,10 @@ class Game extends EventEmitter {
                     _level = 1;
                     _lifes = 2;
                 }
-                _resources = create_resources(
-                    RESOURCE_MAP,
-                    on_resource_eaten
-                );
+                _resources = init_resources(on_resource_eaten);
             }
             scheduler.cancelAll();
+            audio.trigger('opening-song');
             scheduler.delay(4000, game_start);
             for (let entity of [...this.ghosts, _pacman]) {
                 entity.reset();
