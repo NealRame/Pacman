@@ -1,6 +1,6 @@
-var _ = require('underscore');
-var Entity = require('./entity');
-var Vector2D = require('./vector2d');
+const _ = require('underscore');
+const Entity = require('./entity');
+const Vector2D = require('./vector2d');
 
 class MovingEntity extends Entity {
     constructor(pos = new Vector2D(), speed = 0) {

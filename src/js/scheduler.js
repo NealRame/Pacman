@@ -1,6 +1,7 @@
-var start, ticks;
-var tasks = new Map();
-var next_task_id = 1;
+const tasks = new Map();
+
+let next_task_id = 1;
+let start, ticks;
 
 function run_expired_task() {
     for (let [id, entry] of tasks) {

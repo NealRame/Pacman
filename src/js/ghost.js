@@ -1,8 +1,8 @@
-var _ = require('underscore');
-var scheduler = require('./scheduler');
-var graphics = require('./graphics');
-var MovingEntity = require('./moving-entity');
-var Vector2D = require('./vector2d');
+const _ = require('underscore');
+const scheduler = require('./scheduler');
+const graphics = require('./graphics');
+const MovingEntity = require('./moving-entity');
+const Vector2D = require('./vector2d');
 
 const GHOST_EATABLE_TIMEOUT = 8000;
 const GHOST_EATABLE_COLOR_1 = '#0000bb';

@@ -1,15 +1,15 @@
-var _ = require('underscore');
+const _ = require('underscore');
 
-var canvas = document.getElementById('graphics');
+const canvas = document.getElementById('graphics');
 
 if (!canvas) {
     throw Error('No canvas#graphics found!');
 }
 
-var context = canvas.getContext('2d');
+const context = canvas.getContext('2d');
 
-var snap_by_stack = [];
-var snap_by = 0.5;
+let snap_by_stack = [];
+let snap_by = 0.5;
 
 function snap(x) {
     var w = context.lineWidth;
@@ -50,7 +50,7 @@ function Pen({width = 1., color = '#000'} = {}) {
 
 function Brush({color = '#000'} = {}) {
     /* eslint-disable no-underscore-dangle */
-    var color_;
+    let color_;
     Object.defineProperty(this, 'color', {
         enumerable: true,
         get: function() {

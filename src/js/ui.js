@@ -1,7 +1,7 @@
-let _ = require('underscore');
-let functional = require('./functional');
-let EventEmitter = require('events').EventEmitter;
-let Vector2D = require('./vector2d');
+const _ = require('underscore');
+const functional = require('./functional');
+const EventEmitter = require('events').EventEmitter;
+const Vector2D = require('./vector2d');
 
 const KEY_LEFT = 37;
 const KEY_UP = 38;

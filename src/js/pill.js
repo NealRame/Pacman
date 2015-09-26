@@ -1,9 +1,11 @@
-var Entity = require('./entity');
-var graphics = require('./graphics');
-var Vector2D = require('./vector2d');
+const Entity = require('./entity');
+const graphics = require('./graphics');
+const Vector2D = require('./vector2d');
 
-let path = new Path2D();
-path.arc(.5, .5, .35, 0, 2*Math.PI);
+const path = new Path2D(`
+    M .2 .5
+    A .4 .4 0 1 1 .2 .5001
+`);
 
 class Pill extends Entity {
     constructor(pos = new Vector2D()) {

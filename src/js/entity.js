@@ -1,6 +1,6 @@
-var EventEmitter = require('events').EventEmitter;
-var graphics = require('./graphics');
-var Vector2D = require('./vector2d');
+const EventEmitter = require('events').EventEmitter;
+const graphics = require('./graphics');
+const Vector2D = require('./vector2d');
 
 class Entity extends EventEmitter {
     constructor(pos = new Vector2D()) {

@@ -1,20 +1,15 @@
-let _ = require('underscore');
-
-var scheduler = require('./scheduler');
-let Game = require('./game');
-let audio = require('./audio');
-let graphics = require('./graphics');
-let ui = require('./ui');
+const _ = require('underscore');
+const scheduler = require('./scheduler');
+const Game = require('./game');
+const audio = require('./audio');
+const graphics = require('./graphics');
+const ui = require('./ui');
 
 const CANVAS_SIZE = graphics.size();
 const SCALE = 16;
 const game = new Game('score', 'lifes');
 
-function draw(entity) {
-    entity.draw(SCALE);
-}
-
-let init_once = _.once(function() {
+const init_once = _.once(function() {
     game.on('score-changed', function(score) {
         ui.score = score;
     });
@@ -55,6 +50,10 @@ let init_once = _.once(function() {
         audio.toggle();
     });
 });
+
+function draw(entity) {
+    entity.draw(SCALE);
+}
 
 function run(timestamp) {
     scheduler.update(timestamp);

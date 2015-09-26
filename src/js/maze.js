@@ -1,7 +1,7 @@
-var _ = require('underscore');
-var functional = require('./functional');
-var graphics = require('./graphics');
-var Vector2D = require('./vector2d');
+const _ = require('underscore');
+const functional = require('./functional');
+const graphics = require('./graphics');
+const Vector2D = require('./vector2d');
 
 class Cell {
     constructor(column, row, maze, open = false) {
