@@ -1,12 +1,12 @@
-var functional = require('./functional');
-var graphics = require('./graphics');
-var MovingEntity = require('./moving-entity');
-var Vector2D = require('./vector2d');
+const functional = require('./functional');
+const graphics = require('./graphics');
+const MovingEntity = require('./moving-entity');
+const Vector2D = require('./vector2d');
 
 function *pacman_path_generator(n) {
     for (let i of functional.range(-n, n + 1)) {
         if (i > -n && i < n) {
-            let theta = (n + 1 - Math.abs(i))*Math.PI/80;
+            const theta = (n + 1 - Math.abs(i))*Math.PI/80;
             yield new Path2D(`
                 M .5 .5
                 L ${.5 + Math.cos(theta)/2} ${.5 + Math.sin(theta)/2}
@@ -24,7 +24,7 @@ function *pacman_path_generator(n) {
 
 function *dying_pacman_path_generator(n) {
     for (let i of functional.range(0, n + 1)) {
-        let theta = i*Math.PI/n;
+        const theta = i*Math.PI/n;
         if (i === 0) {
             yield new Path2D(`
                 M 1 .5
@@ -46,7 +46,7 @@ function *dying_pacman_path_generator(n) {
 const [...PACMAN] = pacman_path_generator(19);
 const [...DYING_PACMAN] = dying_pacman_path_generator(38);
 
-class Pacman extends(MovingEntity) {
+class Pacman extends MovingEntity {
     constructor(name, pos = new Vector2D(), speed = 0) {
         super(pos, speed);
         this.name = name;
