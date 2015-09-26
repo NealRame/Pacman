@@ -48,7 +48,6 @@ function ghost_speed() {
 class Game extends EventEmitter {
     constructor() {
         super();
-
         /* eslint-disable no-underscore-dangle */
         let _maze = Maze.load(MAZE_DATA);
         let _game_over = true;

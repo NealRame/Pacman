@@ -5,8 +5,10 @@ const Vector2D = require('./vector2d');
 class MovingEntity extends Entity {
     constructor(pos = new Vector2D(), speed = 0) {
         super(pos);
-        let _direction = new Vector2D(); // eslint-disable-line no-underscore-dangle
-        let _freezed = true; // eslint-disable-line no-underscore-dangle
+        /* eslint-disable no-underscore-dangle */
+        let _direction = new Vector2D();
+        let _freezed = true;
+        /* eslint-enable no-underscore-dangle */
         Object.defineProperty(this, 'direction', {
             enumerable: true,
             get: () => _direction,
