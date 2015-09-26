@@ -7,6 +7,8 @@ const KEY_LEFT = 37;
 const KEY_UP = 38;
 const KEY_RIGHT = 39;
 const KEY_DOWN = 40;
+const KEY_M = 77;
+const KEY_P = 80;
 
 function create_life_elements(count) {
     return _(Math.max(count, 0)).times(() => {
@@ -16,26 +18,29 @@ function create_life_elements(count) {
     });
 }
 
-let key_to_direction = functional.dispatch(
-    ev => ev.keyCode === KEY_LEFT ?  Vector2D.WEST  : null,
-    ev => ev.keyCode === KEY_RIGHT ? Vector2D.EAST  : null,
-    ev => ev.keyCode === KEY_UP ?    Vector2D.NORTH : null,
-    ev => ev.keyCode === KEY_DOWN ?  Vector2D.SOUTH : null
+const key_to_event = functional.dispatch(
+    key_code => key_code === KEY_LEFT ?  ['direction-changed', Vector2D.WEST]  : null,
+    key_code => key_code === KEY_RIGHT ? ['direction-changed', Vector2D.EAST]  : null,
+    key_code => key_code === KEY_UP ?    ['direction-changed', Vector2D.NORTH] : null,
+    key_code => key_code === KEY_DOWN ?  ['direction-changed', Vector2D.SOUTH] : null,
+    key_code => key_code === KEY_M ?     ['toggle-sound-mute'] : null,
+    key_code => key_code === KEY_P ?     ['toggle-pause'] : null
 );
 
-let game_level_field = document.getElementById('level');
-let game_lifes_field = document.getElementById('lifes');
-let game_high_score_field = document.getElementById('high-score');
-let game_score_field = document.getElementById('score');
-let game_message_field = document.getElementById('message');
+const game_level_field = document.getElementById('level');
+const game_lifes_field = document.getElementById('lifes');
+const game_high_score_field = document.getElementById('high-score');
+const game_score_field = document.getElementById('score');
+const game_message_field = document.getElementById('message');
 
 class Ui extends EventEmitter {
     constructor() {
         super();
         document.addEventListener('keydown', (ev) => {
-            let direction = key_to_direction(ev);
-            if (direction) {
-                this.emit('direction-changed', direction);
+            const event_data = key_to_event(ev.keyCode);
+
+            if (event_data) {
+                this.emit(...event_data);
                 ev.preventDefault();
                 ev.stopPropagation();
             }
