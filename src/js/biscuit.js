@@ -16,8 +16,8 @@ class Biscuit extends Entity {
             graphics.setBrush({
                 color: '#FFB9AF'
             });
-            graphics.translate({x: .45, y: .45});
-            graphics.fillRect({x: 0, y: 0}, .1, .1);
+            graphics.translate({x: .4, y: .4});
+            graphics.fillRect({x: 0, y: 0}, .2, .2);
             graphics.pop();
         }
     }

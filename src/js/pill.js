@@ -3,7 +3,7 @@ var graphics = require('./graphics');
 var Vector2D = require('./vector2d');
 
 let path = new Path2D();
-path.arc(.5, .5, .2, 0, 2*Math.PI);
+path.arc(.5, .5, .35, 0, 2*Math.PI);
 
 class Pill extends Entity {
     constructor(pos = new Vector2D()) {
