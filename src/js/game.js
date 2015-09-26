@@ -1,6 +1,7 @@
 let _ = require('underscore');
 let audio = require('./audio');
 let Biscuit = require('./biscuit');
+let Engine = require('./game-engine');
 let EventEmitter = require('events').EventEmitter;
 let Ghost = require('./ghost');
 let Maze = require('./maze');
@@ -51,6 +52,7 @@ class Game extends EventEmitter {
         /* eslint-disable no-underscore-dangle */
         let _maze = Maze.load(MAZE_DATA);
         let _game_over = true;
+        let _paused = false;
         let _high_score = 0;
         let _score = 0;
         let _level = 1;
@@ -104,11 +106,20 @@ class Game extends EventEmitter {
             },
             scattering: new Vector2D([0, _maze.rows])
         });
+        const _engine = new Engine(_maze, _pacman, [_blinky, _pinky, _inky, _clyde]);
         /* eslint-enable-line no-underscore-dangle */
 
         Object.defineProperty(this, 'maze', {
             enumerable: true,
             get: () => _maze
+        });
+
+        Object.defineProperty(this, 'paused', {
+            enumerable: true,
+            get: () => _paused,
+            set: (paused) => {
+                _paused = !!paused;
+            }
         });
 
         Object.defineProperty(this, 'resources', {
@@ -146,21 +157,26 @@ class Game extends EventEmitter {
             get: () => _level
         });
 
-        let game_over = () => {
+        Object.defineProperty(this, 'engine', {
+            enumerable: true,
+            get: () => _engine
+        });
+
+        const game_over = () => {
             if (!_game_over) {
                 _game_over = true;
                 this.emit('game-over');
             }
         };
 
-        let game_start = () => {
+        const game_start = () => {
             for (let entity of [...this.ghosts, _pacman]) {
                 entity.freezed = false;
             }
             this.emit('game-started');
         };
 
-        let update_score = (points) => {
+        const update_score = (points) => {
             _score += points;
             this.emit('score-changed', _score);
             if (_score > _high_score) {
@@ -169,18 +185,18 @@ class Game extends EventEmitter {
             }
         };
 
-        let update_life = (lifes) => {
+        const update_life = (lifes) => {
             _lifes += lifes;
             this.emit('life-count-changed', _lifes);
         };
 
-        let on_ghost_eaten = (ghost) => {
+        const on_ghost_eaten = (ghost) => {
             _ghost_points_coefficient += 1;
             ghost.eatable = false;
             update_score(_ghost_points_coefficient*ghost.points);
         };
 
-        let on_pacman_eaten = () => {
+        const on_pacman_eaten = () => {
             for (let entity of [_pacman, ...this.ghosts]) {
                 entity.freezed = true;
             }
@@ -194,7 +210,7 @@ class Game extends EventEmitter {
             });
         };
 
-        let on_resource_eaten = (resource) => {
+        const on_resource_eaten = (resource) => {
             _resources.delete(resource);
             update_score(resource.points);
             if (resource instanceof Pill) {
@@ -266,6 +282,20 @@ class Game extends EventEmitter {
                 : on_ghost_eaten
             );
         }
+    }
+    run() {
+        if (!this.paused) {
+            this.engine.run();
+            const pos = this.pacman.position;
+            for (let resource of this.resources) {
+                if (pos.equal(resource.position)) {
+                    resource.eaten = true;
+                }
+            }
+        }
+    }
+    togglePause() {
+        this.paused = !this.paused;
     }
 }
 
