@@ -4,7 +4,7 @@ const Vector2D = require('./vector2d');
 
 const path = new Path2D(`
     M .2 .5
-    A .4 .4 0 1 1 .2 .5001
+    A .35 .35 0 1 1 .2 .5001
 `);
 
 class Pill extends Entity {
