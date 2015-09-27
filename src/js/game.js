@@ -49,7 +49,6 @@ class Game extends EventEmitter {
     constructor() {
         super();
         /* eslint-disable no-underscore-dangle */
-        let _maze = Maze.load(MAZE_DATA);
         let _game_over = true;
         let _paused = false;
         let _high_score = 0;
@@ -58,20 +57,21 @@ class Game extends EventEmitter {
         let _lifes = 2;
         let _ghost_points_coefficient = 0;
         let _resources;
-        let _pacman = new Pacman('pacman', new Vector2D([13, 23]), function() {
+        const _maze = Maze.load(MAZE_DATA);
+        const _pacman = new Pacman('pacman', new Vector2D([13, 23]), function() {
             return this.eaten ?  0 : ENTITY_SPEED;
         });
-        let _blinky = new Ghost(
+        const _blinky = new Ghost(
             'blinky',
             '#fd0900',
-            new Vector2D([13, 11]), ghost_speed, {
+            new Vector2D([13.5, 11]), ghost_speed, {
             chasing: () => _pacman.position,
             scattering: new Vector2D([_maze.columns - 2, -1])
         });
-        let _pinky = new Ghost(
+        const _pinky = new Ghost(
             'pinky',
             '#feb8de',
-            new Vector2D([11, 13]), ghost_speed, {
+            new Vector2D([11.5, 14]), ghost_speed, {
             chasing: () => {
                 let u = _pacman.velocity.unit().mul(4);
                 if (u.equal({x: 0, y: 0})) {
@@ -81,10 +81,10 @@ class Game extends EventEmitter {
             },
             scattering: new Vector2D([1, -1])
         });
-        let _inky = new Ghost(
+        const _inky = new Ghost(
             'inky',
             '#22ffde',
-            new Vector2D([13, 13]), ghost_speed, {
+            new Vector2D([13.5, 14]), ghost_speed, {
             chasing: () => {
                 let u = _pacman.velocity.unit().mul(2);
                 if (u.equal({x: 0, y: 0})) {
@@ -95,10 +95,10 @@ class Game extends EventEmitter {
             },
             scattering: new Vector2D([_maze.columns - 1, _maze.rows])
         });
-        let _clyde = new Ghost(
+        const _clyde = new Ghost(
             'clyde',
             '#feb846',
-            new Vector2D([15, 13]), ghost_speed, {
+            new Vector2D([15.5, 14]), ghost_speed, {
             chasing: () => {
                 let d = _pacman.distanceFrom(_clyde.position);
                 return d > 8 ? _pacman.position : new Vector2D([0, _maze.rows]);
