@@ -330,6 +330,10 @@ export default class Game extends EventEmitter {
             scheduler.delay(4000, game_start);
             for (let entity of [...this.ghosts, _pacman]) {
                 entity.reset();
+                if (entity !== _pacman) {
+                    entity.destination = entity.position.add({x: .5, y: 0});
+                    entity.position = entity.destination;
+                }
             }
             enter_scatter_mode();
             this.emit('reset');
