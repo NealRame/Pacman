@@ -1,7 +1,7 @@
-const _ = require('underscore');
-const functional = require('./functional');
-const EventEmitter = require('events').EventEmitter;
-const Vector2D = require('./vector2d');
+import _ from 'underscore';
+import {dispatch} from './functional';
+import {EventEmitter} from 'events';
+import Vector2D from './vector2d';
 
 const KEY_LEFT = 37;
 const KEY_UP = 38;
@@ -18,7 +18,7 @@ function create_life_elements(count) {
     });
 }
 
-const key_to_event = functional.dispatch(
+const key_to_event = dispatch(
     key_code => key_code === KEY_LEFT ?  ['direction-changed', Vector2D.WEST]  : null,
     key_code => key_code === KEY_RIGHT ? ['direction-changed', Vector2D.EAST]  : null,
     key_code => key_code === KEY_UP ?    ['direction-changed', Vector2D.NORTH] : null,
@@ -73,4 +73,4 @@ class Ui extends EventEmitter {
     }
 }
 
-module.exports = new Ui();
+export default new Ui();

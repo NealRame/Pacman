@@ -1,8 +1,8 @@
-const EventEmitter = require('events').EventEmitter;
-const graphics = require('./graphics');
-const Vector2D = require('./vector2d');
+import * as graphics from './graphics';
+import {EventEmitter} from 'events';
+import Vector2D from './vector2d';
 
-class Entity extends EventEmitter {
+export default class Entity extends EventEmitter {
     constructor(pos = new Vector2D()) {
         super();
         /* eslint-disable no-underscore-dangle */
@@ -50,4 +50,3 @@ class Entity extends EventEmitter {
         /* eslint-enable no-underscore-dangle */
     }
 }
-module.exports = Entity;

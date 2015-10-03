@@ -1,15 +1,15 @@
-const _ = require('underscore');
-const scheduler = require('./scheduler');
-const Game = require('./game');
-const audio = require('./audio');
-const graphics = require('./graphics');
-const ui = require('./ui');
+import * as graphics from './graphics';
+import * as scheduler from './scheduler';
+import {once} from 'underscore' ;
+import audio from './audio';
+import ui from './ui';
+import Game from './game';
 
 const CANVAS_SIZE = graphics.size();
 const SCALE = 16;
-const game = new Game('score', 'lifes');
+const game = new Game();
 
-const init_once = _.once(function() {
+const init_once = once(function() {
     game.on('score-changed', function(score) {
         ui.score = score;
     });
@@ -70,6 +70,9 @@ function run(timestamp) {
 }
 
 audio.initialize().then(() => {
-    graphics.translate({x: (CANVAS_SIZE.width - SCALE*game.maze.columns)/2, y: 0});
+    graphics.translate({
+        x: (CANVAS_SIZE.width - SCALE*game.maze.columns)/2,
+        y: (CANVAS_SIZE.height - SCALE*game.maze.rows)/2
+    });
     window.requestAnimationFrame(run);
 });

@@ -1,8 +1,7 @@
-const _ = require('underscore');
-const scheduler = require('./scheduler');
-const graphics = require('./graphics');
-const MovingEntity = require('./moving-entity');
-const Vector2D = require('./vector2d');
+import * as scheduler from './scheduler';
+import * as graphics from './graphics';
+import MovingEntity from './moving-entity';
+import Vector2D from './vector2d';
 
 const GHOST_EATABLE_TIMEOUT = 8000;
 const GHOST_EATABLE_COLOR_1 = '#0000bb';
@@ -64,7 +63,7 @@ function *ghost_body_path_generator() {
     }
 }
 
-class Ghost extends(MovingEntity) {
+export default class Ghost extends(MovingEntity) {
     constructor(name, color = '#222', pos = new Vector2D(), speed = 0., target) {
         super(pos, speed);
         /* eslint-disable no-underscore-dangle */
@@ -191,5 +190,3 @@ class Ghost extends(MovingEntity) {
         graphics.pop();
     }
 }
-
-module.exports = Ghost;

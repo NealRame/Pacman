@@ -1,8 +1,8 @@
-var Entity = require('./entity');
-var graphics = require('./graphics');
-var Vector2D = require('./vector2d');
+import * as graphics from './graphics';
+import Entity from './entity';
+import Vector2D from './vector2d';
 
-class Biscuit extends Entity {
+export default class Biscuit extends Entity {
     constructor(pos = new Vector2D()) {
         super(pos);
         Object.defineProperty(this, 'points', {
@@ -22,4 +22,3 @@ class Biscuit extends Entity {
         }
     }
 }
-module.exports = Biscuit;

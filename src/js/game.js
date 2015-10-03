@@ -1,7 +1,8 @@
-const _ = require('underscore');
-const audio = require('./audio');
-const Biscuit = require('./biscuit');
-const dispatch = require('./functional').dispatch;
+import _ from 'underscore';
+import audio from './audio';
+import {dispatch} from './functional';
+import Biscuit from './biscuit';
+
 const Engine = require('./game-engine');
 const EventEmitter = require('events').EventEmitter;
 const Ghost = require('./ghost');
@@ -86,7 +87,7 @@ const common_ghost_behavior = dispatch(
     }
 );
 
-class Game extends EventEmitter {
+export default class Game extends EventEmitter {
     constructor() {
         super();
         /* eslint-disable no-underscore-dangle */
@@ -354,5 +355,3 @@ class Game extends EventEmitter {
         this.paused = !this.paused;
     }
 }
-
-module.exports = Game;

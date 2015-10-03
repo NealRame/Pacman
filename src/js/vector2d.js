@@ -1,4 +1,4 @@
-class Vector2D {
+export default class Vector2D {
     constructor({x = 0, y = 0} = {}) {
         this.x = x;
         this.y = y;
@@ -49,5 +49,3 @@ Object.defineProperty(Vector2D, 'WEST', {
     enumerable: true,
     value: new Vector2D({x: -1, y:  0})
 });
-
-module.exports = Vector2D;

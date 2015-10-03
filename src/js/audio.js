@@ -1,8 +1,6 @@
-require('browsernizr/test/audio');
-
-const _ = require('underscore');
-const Modernizr = require('browsernizr');
-const existy = require('./functional').existy;
+import 'browsernizr/test/audio';
+import Modernizr from 'browsernizr';
+import {existy} from './functional';
 
 const SOUND_EXTENSION = Modernizr.audio.ogg ? 'ogg' : 'mp3';
 const SOUND_PREFIX = 'assets/sounds/';
@@ -61,7 +59,7 @@ class AudioFX {
         };
 
         this.initialize = () => {
-            return Promise.all(_.map(SOUND_FX, load_audio_fx))
+            return Promise.all(SOUND_FX.map(load_audio_fx))
                 .then(res => {
                     _fx_map = new Map(res);
                     return true;
@@ -74,4 +72,4 @@ class AudioFX {
     }
 }
 
-module.exports = new AudioFX();
+export default new AudioFX();

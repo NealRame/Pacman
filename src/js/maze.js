@@ -1,7 +1,7 @@
-const _ = require('underscore');
-const functional = require('./functional');
-const graphics = require('./graphics');
-const Vector2D = require('./vector2d');
+import {chain} from 'underscore';
+import {range} from './functional';
+import * as graphics from './graphics';
+import Vector2D from './vector2d';
 
 class Cell {
     constructor(column, row, maze, open = false) {
@@ -41,13 +41,13 @@ class Cell {
         }
     }
     neighborhood() {
-        return _.chain([Vector2D.NORTH, Vector2D.EAST, Vector2D.SOUTH, Vector2D.WEST])
+        return chain([Vector2D.NORTH, Vector2D.EAST, Vector2D.SOUTH, Vector2D.WEST])
             .map(direction => this.neighborTo(direction))
             .compact()
             .value();
     }
     reachableNeighborhood() {
-        return _.chain([Vector2D.NORTH, Vector2D.EAST, Vector2D.SOUTH, Vector2D.WEST])
+        return chain([Vector2D.NORTH, Vector2D.EAST, Vector2D.SOUTH, Vector2D.WEST])
             .map(direction => this.reachableNeighborTo(direction))
             .compact()
             .value();
@@ -62,11 +62,11 @@ class Cell {
     }
 }
 
-class Maze {
+export default class Maze {
     constructor(columns, rows) {
         var cells = [];
-        for (let row of functional.range(0, rows)) {
-            for (let column of functional.range(0, columns)) {
+        for (let row of range(0, rows)) {
+            for (let column of range(0, columns)) {
                 cells.push(new Cell(column, row, this));
             }
         }
@@ -130,5 +130,3 @@ class Maze {
         return maze;
     }
 }
-
-module.exports = Maze;

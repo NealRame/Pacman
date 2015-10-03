@@ -56,31 +56,33 @@ class Sequence {
     }
 }
 
-module.exports = {
-    begin: function() {
-        return new Sequence();
-    },
-    cancel: function(task_id) {
-        tasks.delete(task_id);
-    },
-    cancelAll: function() {
-        tasks.clear();
-    },
-    delay: function(wait, task) {
-        return put_task(
-            next_task_id++,
-            wait,
-            () => {
-                task();
-                return {};
-            }
-        );
-    },
-    update: function(timestamp) {
-        if (!start) {
-            start = timestamp;
+export function begin() {
+    return new Sequence();
+}
+
+export function cancel(task_id) {
+    tasks.delete(task_id);
+}
+
+export function cancelAll() {
+    tasks.clear();
+}
+
+export function delay(wait, task) {
+    return put_task(
+        next_task_id++,
+        wait,
+        () => {
+            task();
+            return {};
         }
-        ticks = timestamp - start;
-        run_expired_task();
+    );
+}
+
+export function update(timestamp) {
+    if (!start) {
+        start = timestamp;
     }
-};
+    ticks = timestamp - start;
+    run_expired_task();
+}

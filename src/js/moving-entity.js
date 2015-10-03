@@ -1,9 +1,10 @@
-const _ = require('underscore');
-const existy = require('./functional').existy;
-const Entity = require('./entity');
-const Vector2D = require('./vector2d');
+import {isFunction} from 'util';
+import {constant} from 'underscore';
+import {existy} from './functional';
+import Entity from './entity';
+import Vector2D from './vector2d';
 
-class MovingEntity extends Entity {
+export default class MovingEntity extends Entity {
     constructor(pos = new Vector2D(), speed = 0) {
         super(pos);
         /* eslint-disable no-underscore-dangle */
@@ -38,7 +39,7 @@ class MovingEntity extends Entity {
         });
         Object.defineProperty(this, 'speed', {
             enumerable: true,
-            get: _.isFunction(speed) ? speed.bind(this) : _.constant(speed)
+            get: isFunction(speed) ? speed.bind(this) : constant(speed)
         });
         Object.defineProperty(this, 'velocity', {
             enumerable: true,
@@ -76,4 +77,3 @@ class MovingEntity extends Entity {
         this.freezed = true;
     }
 }
-module.exports = MovingEntity;

@@ -1,8 +1,8 @@
-const _ = require('underscore');
-const dispatch = require('./functional').dispatch;
-const Vector2D = require('./vector2d');
+import {chain} from 'underscore';
+import {dispatch} from './functional';
+import Vector2D from './vector2d';
 
-class GameEngine {
+export default class GameEngine {
     constructor(maze, pacman, ghosts) {
         /* eslint-disable no-underscore-dangle */
         // let _move_map = {};
@@ -27,7 +27,7 @@ class GameEngine {
                 return current.neighborTo(Vector2D.NORTH).position;
             }
 
-            return _.chain(current.reachableNeighborhood())
+            return chain(current.reachableNeighborhood())
                 .map((cell) => cell.position)
                 .min((pos) => pos.equal(origin) ? Infinity : ghost.target.distance(pos))
                 .value();
@@ -99,5 +99,3 @@ class GameEngine {
         }
     }
 }
-
-module.exports = GameEngine;
