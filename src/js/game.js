@@ -1,20 +1,22 @@
 import _ from 'underscore';
-import audio from './audio';
+
+import * as scheduler from './scheduler';
+
 import {dispatch} from './functional';
+import {EventEmitter} from 'events';
+
+import audio from './audio';
 import Biscuit from './biscuit';
+import Engine from './game-engine';
+import Ghost from './ghost';
+import Maze from './maze';
+import Pacman from './pacman';
+import Pill from './pill';
+import Vector2D from './vector2d';
 
-const Engine = require('./game-engine');
-const EventEmitter = require('events').EventEmitter;
-const Ghost = require('./ghost');
-const Maze = require('./maze');
-const Pacman = require('./pacman');
-const Pill = require('./pill');
-const scheduler = require('./scheduler');
-const Vector2D = require('./vector2d');
+import MAZE_DATA from './maze-data.json';
 
-const MAZE_DATA = require('./maze-data.json');
 const ENTITY_SPEED = 1/10;
-
 const GAME_MODE_SCATTERING = 0;
 const GAME_MODE_CHASING = 1;
 
