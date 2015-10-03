@@ -35,7 +35,6 @@ const key_to_event = dispatch(
     key_code => key_code === KEY_P ?     ['toggle-pause'] : null
 );
 
-const game_screen = require('./graphics').canvas;
 const game_level_field = document.getElementById('level');
 const game_lifes_field = document.getElementById('lifes');
 const game_high_score_field = document.getElementById('high-score');
@@ -70,9 +69,12 @@ class Ui extends EventEmitter {
         game_score_field.innerHTML = `${score}`;
     }
     showMessage(message) {
-        let rect = game_screen.getBoundingClientRect();
-        console.log(rect);
-        game_message_field.style.top = (rect.top) + 'px';
+        const rect = canvas.getBoundingClientRect();
+        const text_zone_top = textZone.y*SCALE;
+        const text_zone_height = textZone.height*SCALE;
+        const message_height = game_message_field.getBoundingClientRect().height;
+
+        game_message_field.style.top = rect.top + text_zone_top + (text_zone_height - message_height)/2 + 'px';
         game_message_field.innerHTML = message;
         game_message_field.setAttribute('active', '');
     }
