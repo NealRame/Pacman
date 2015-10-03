@@ -1,6 +1,7 @@
 const _ = require('underscore');
 const audio = require('./audio');
 const Biscuit = require('./biscuit');
+const dispatch = require('./functional').dispatch;
 const Engine = require('./game-engine');
 const EventEmitter = require('events').EventEmitter;
 const Ghost = require('./ghost');
@@ -13,16 +14,19 @@ const Vector2D = require('./vector2d');
 const MAZE_DATA = require('./maze-data.json');
 const ENTITY_SPEED = 1/10;
 
+const GAME_MODE_SCATTERING = 0;
+const GAME_MODE_CHASING = 1;
+
 function init_resources(on_resource_eaten) {
-    let resources = _(MAZE_DATA.rows).times((i) => {
-        return _(MAZE_DATA.columns).times((j) => {
+    let resources = _(MAZE_DATA.rows).times((y) => {
+        return _(MAZE_DATA.columns).times((x) => {
             let resource;
-            switch (MAZE_DATA.resources[i][j]) {
+            switch (MAZE_DATA.resources[y][x]) {
                 case 1:
-                    resource = new Biscuit(new Vector2D([j, i]));
+                    resource = new Biscuit(new Vector2D({x, y}));
                     break;
                 case 2:
-                    resource = new Pill(new Vector2D([j, i]));
+                    resource = new Pill(new Vector2D({x, y}));
                     break;
                 default:
                     break;
@@ -36,6 +40,13 @@ function init_resources(on_resource_eaten) {
     return new Set(_.compact(_(resources).flatten()));
 }
 
+function random_position() {
+    return new Vector2D({
+        x: _.random(MAZE_DATA.columns),
+        y: _.random(MAZE_DATA.rows)
+    });
+}
+
 function ghost_speed() {
     if (this.eaten) {
         return ENTITY_SPEED*2;
@@ -45,12 +56,43 @@ function ghost_speed() {
     return ENTITY_SPEED;
 }
 
+function is_in_ghost_house(ghost) {
+    const pos = ghost.position;
+    const ghost_house = MAZE_DATA.ghostHouseZone;
+    return ghost_house.x <= pos.x && pos.x < (ghost_house.x + ghost_house.width)
+        && ghost_house.y <= pos.y && pos.y < (ghost_house.y + ghost_house.height);
+}
+
+const common_ghost_behavior = dispatch(
+    (ghost) => {
+        if (!ghost.ready) {
+            return new Vector2D({x: 13, y: 14});
+        }
+    },
+    (ghost) => {
+        if (ghost.eatable) {
+            return random_position();
+        }
+    },
+    (ghost) => {
+        if (ghost.ready && is_in_ghost_house(ghost)) {
+            return new Vector2D(MAZE_DATA.engagementZone);
+        }
+    },
+    (ghost, mode) => {
+        if (mode === GAME_MODE_SCATTERING) {
+            return new Vector2D(MAZE_DATA.scatteringZones[ghost.name]);
+        }
+    }
+);
+
 class Game extends EventEmitter {
     constructor() {
         super();
         /* eslint-disable no-underscore-dangle */
         let _game_over = true;
         let _paused = false;
+        let _mode = GAME_MODE_SCATTERING;
         let _high_score = 0;
         let _score = 0;
         let _level = 1;
@@ -58,53 +100,66 @@ class Game extends EventEmitter {
         let _ghost_points_coefficient = 0;
         let _resources;
         const _maze = Maze.load(MAZE_DATA);
-        const _pacman = new Pacman('pacman', new Vector2D([13, 23]), function() {
-            return this.eaten ?  0 : ENTITY_SPEED;
-        });
+        const _pacman = new Pacman(
+            'pacman',
+            new Vector2D(MAZE_DATA.respawnZones.pacman),
+            ENTITY_SPEED
+        );
         const _blinky = new Ghost(
             'blinky',
             '#fd0900',
-            new Vector2D([13.5, 11]), ghost_speed, {
-            chasing: () => _pacman.position,
-            scattering: new Vector2D([_maze.columns - 2, -1])
-        });
+            new Vector2D(MAZE_DATA.respawnZones.blinky),
+            ghost_speed,
+            dispatch(
+                () => common_ghost_behavior(_blinky, _mode),
+                () => _pacman.position
+            )
+        );
         const _pinky = new Ghost(
             'pinky',
             '#feb8de',
-            new Vector2D([11.5, 14]), ghost_speed, {
-            chasing: () => {
-                let u = _pacman.velocity.unit().mul(4);
-                if (u.equal({x: 0, y: 0})) {
-                    u = new Vector2D([4, 0]);
+            new Vector2D(MAZE_DATA.respawnZones.pinky),
+            ghost_speed,
+            dispatch(
+                () => common_ghost_behavior(_pinky, _mode),
+                () => {
+                    let u = _pacman.velocity.unit().mul(4);
+                    if (u.equal({x: 0, y: 0})) {
+                        u = new Vector2D([4, 0]);
+                    }
+                    return _pacman.position.add(u);
                 }
-                return _pacman.position.add(u);
-            },
-            scattering: new Vector2D([1, -1])
-        });
+            )
+        );
         const _inky = new Ghost(
             'inky',
             '#22ffde',
-            new Vector2D([13.5, 14]), ghost_speed, {
-            chasing: () => {
-                let u = _pacman.velocity.unit().mul(2);
-                if (u.equal({x: 0, y: 0})) {
-                    u = new Vector2D([2, 0]);
+            new Vector2D(MAZE_DATA.respawnZones.inky),
+            ghost_speed,
+            dispatch(
+                () => common_ghost_behavior(_inky, _mode),
+                () => {
+                    let u = _pacman.velocity.unit().mul(2);
+                    if (u.equal({x: 0, y: 0})) {
+                        u = new Vector2D([2, 0]);
+                    }
+                    let p = Vector2D.fromPoint(_blinky.position, _pacman.position.add(u));
+                    return u.add(p);
                 }
-                let p = Vector2D.fromPoint(_blinky.position, _pacman.position.add(u));
-                return u.add(p);
-            },
-            scattering: new Vector2D([_maze.columns - 1, _maze.rows])
-        });
+            )
+        );
         const _clyde = new Ghost(
             'clyde',
             '#feb846',
-            new Vector2D([15.5, 14]), ghost_speed, {
-            chasing: () => {
-                let d = _pacman.distanceFrom(_clyde.position);
-                return d > 8 ? _pacman.position : new Vector2D([0, _maze.rows]);
-            },
-            scattering: new Vector2D([0, _maze.rows])
-        });
+            new Vector2D(MAZE_DATA.respawnZones.clyde),
+            ghost_speed,
+            dispatch(
+                () => common_ghost_behavior(_clyde, _mode),
+                () => _pacman.distanceFrom(_clyde.position) > 8
+                        ? _pacman.position
+                        : new Vector2D([0, _maze.rows])
+            )
+        );
         const _engine = new Engine(_maze, _pacman, [_blinky, _pinky, _inky, _clyde]);
         /* eslint-enable-line no-underscore-dangle */
 
@@ -172,6 +227,12 @@ class Game extends EventEmitter {
             for (let entity of [...this.ghosts, _pacman]) {
                 entity.freezed = false;
             }
+            scheduler.delay(0, () => _blinky.ready = true);
+            scheduler.delay(1000, () => {
+                _pinky.ready = true;
+                _inky.ready = true;
+            });
+            scheduler.delay(3000, () => _clyde.ready = true);
             this.emit('game-started');
         };
 
@@ -242,16 +303,12 @@ class Game extends EventEmitter {
         let enter_scatter_mode;
 
         enter_scatter_mode = () => {
-            for (let ghost of this.ghosts) {
-                ghost.state = 'scattering';
-            }
+            _mode = GAME_MODE_SCATTERING;
             scheduler.delay(7000, enter_chase_mode);
         };
 
         enter_chase_mode = () => {
-            for (let ghost of this.ghosts) {
-                ghost.state = 'chasing';
-            }
+            _mode = GAME_MODE_CHASING;
             scheduler.delay(20000, enter_scatter_mode);
         };
 

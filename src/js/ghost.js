@@ -65,12 +65,13 @@ function *ghost_body_path_generator() {
 }
 
 class Ghost extends(MovingEntity) {
-    constructor(name, color = '#222', pos = new Vector2D(), speed = 0., behavior = {}) {
+    constructor(name, color = '#222', pos = new Vector2D(), speed = 0., target) {
         super(pos, speed);
         /* eslint-disable no-underscore-dangle */
         let _color = color;
         let _eatable = false;
         let _task_id = null;
+        let _ready = false;
         let _body_path = ghost_body_path_generator();
         /* eslint-enable no-underscore-dangle */
         Object.defineProperty(this, 'name', {
@@ -84,6 +85,13 @@ class Ghost extends(MovingEntity) {
         Object.defineProperty(this, 'points', {
             enumerable: true,
             get: () => 200
+        });
+        Object.defineProperty(this, 'ready', {
+            enumerable: true,
+            get: () => _ready,
+            set: (ready) => {
+                _ready = !!ready;
+            }
         });
         Object.defineProperty(this, 'bodyPath', {
             enumerable: true,
@@ -116,23 +124,20 @@ class Ghost extends(MovingEntity) {
         });
         Object.defineProperty(this, 'target', {
             enumerable: true,
-            get: () => {
-                if (this.eaten) {
-                    return pos;
-                }
-                return _.result(behavior, this.state || 'chasing', pos);
-            }
+            get: () => target.call(this)
         });
-        this.step = () => {
-            if (this.position.equal(pos)) {
-                this.eaten = false;
-            }
-            super.step();
-        };
+        this.on('eaten', () => this.ready = false);
     }
     reset() {
         super.reset();
-        this.eatable = false;
+        this.eatable = this.ready = false;
+    }
+    step() {
+        if (this.eaten && this.position.equal(this.target)) {
+            this.eaten = false;
+            scheduler.delay(2000, () => this.ready = true);
+        }
+        super.step();
     }
     _draw(scale) {
         // We could have used the `Vector2D#norm` getter but `MovingEntity`
@@ -155,7 +160,7 @@ class Ghost extends(MovingEntity) {
             graphics.fillPath(this.bodyPath);
         }
 
-        graphics.translate(new Vector2D([9/32, 13/32]));
+        graphics.translate({x: 9/32, y: 13/32});
         graphics.setBrush({
             color: '#fff'
         });
@@ -169,7 +174,7 @@ class Ghost extends(MovingEntity) {
         graphics.fillPath(INNER_GHOST_EYE);
         graphics.pop();
 
-        graphics.translate(new Vector2D([14/32, 0]));
+        graphics.translate(new Vector2D({x: 14/32, y: 0}));
         graphics.setBrush({
             color: '#fff'
         });

@@ -67,6 +67,8 @@ function Brush({color = '#000'} = {}) {
     /* eslint-disable no-underscore-dangle */
 }
 
+exports.canvas = canvas;
+
 exports.clear = function() {
     context.clearRect(0, 0, canvas.width, canvas.height);
 };

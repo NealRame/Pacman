@@ -69,11 +69,7 @@ function run(timestamp) {
     window.requestAnimationFrame(run);
 }
 
-audio.initialize().then((status) => {
-    console.log(`audio.initialize: ${status}`);
-    graphics.translate({
-        x: (CANVAS_SIZE.width - SCALE*game.maze.columns)/2,
-        y: (CANVAS_SIZE.height - SCALE*game.maze.rows)/2
-    });
+audio.initialize().then(() => {
+    graphics.translate({x: (CANVAS_SIZE.width - SCALE*game.maze.columns)/2, y: 0});
     window.requestAnimationFrame(run);
 });

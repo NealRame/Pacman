@@ -27,7 +27,7 @@ class Cell {
         };
     }
     get position() {
-        return new Vector2D([this.column, this.row]);
+        return new Vector2D({x: this.column, y: this.row});
     }
     neighborTo(direction) {
         if (direction) {
