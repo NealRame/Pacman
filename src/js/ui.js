@@ -1,7 +1,15 @@
 import _ from 'underscore';
+import {canvas} from './graphics';
 import {dispatch} from './functional';
 import {EventEmitter} from 'events';
+import {columns, rows, textZone} from './maze-data.json';
 import Vector2D from './vector2d';
+
+export const SCALE = Math.min(canvas.width/columns, canvas.height/rows);
+export const TRANSLATE = new Vector2D({
+    x: (canvas.width - SCALE*columns)/2,
+    y: (canvas.height - SCALE*rows)/2
+});
 
 const KEY_LEFT = 37;
 const KEY_UP = 38;
