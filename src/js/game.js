@@ -1,10 +1,7 @@
 import _ from 'underscore';
-
 import * as scheduler from './scheduler';
-
 import {dispatch} from './functional';
 import {EventEmitter} from 'events';
-
 import audio from './audio';
 import Biscuit from './biscuit';
 import Engine from './game-engine';
@@ -13,7 +10,6 @@ import Maze from './maze';
 import Pacman from './pacman';
 import Pill from './pill';
 import Vector2D from './vector2d';
-
 import MAZE_DATA from './maze-data.json';
 
 const ENTITY_SPEED = 1/10;
