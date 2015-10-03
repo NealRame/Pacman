@@ -1,7 +1,8 @@
+$body-bg-color: #060e1a;
 $ui-area-width: 480px;
 
 body {
-    background-color: #000;
+    background-color: $body-bg-color;
     color: #e4e4f4;
     font-family: 'VT323', ;
     margin: 0;
