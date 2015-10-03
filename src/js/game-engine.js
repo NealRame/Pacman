@@ -70,7 +70,7 @@ export default class GameEngine {
         this.updateDirection = (direction) => {
             if (!pacman.eaten) {
                 if (direction.add(pacman.direction).isNull()) {
-                    pacman.destination = position_to_cell(pacman.position).position.add(direction);
+                    pacman.destination = position_to_cell(pacman.origin).position;
                 }
                 _next_direction = direction;
             }
