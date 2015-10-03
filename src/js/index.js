@@ -2,7 +2,7 @@ import * as graphics from './graphics';
 import * as scheduler from './scheduler';
 import {once} from 'underscore' ;
 import audio from './audio';
-import ui from './ui';
+import ui, {SCALE, TRANSLATE} from './ui';
 import Game from './game';
 
 const CANVAS_SIZE = graphics.size();
@@ -70,9 +70,8 @@ function run(timestamp) {
 }
 
 audio.initialize().then(() => {
-    graphics.translate({
-        x: (CANVAS_SIZE.width - SCALE*game.maze.columns)/2,
-        y: (CANVAS_SIZE.height - SCALE*game.maze.rows)/2
+        graphics.translate(TRANSLATE);
+        window.requestAnimationFrame(run);
     });
     window.requestAnimationFrame(run);
 });
