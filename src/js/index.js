@@ -59,15 +59,16 @@ document_ready()
             init(game);
             game.run();
             graphics.clear();
+            graphics.push();
+            graphics.translate(TRANSLATE);
             draw(game.maze);
             if (!game.paused) {
                 for (let drawable of [...game.resources, ...game.ghosts, game.pacman]) {
                     draw(drawable);
                 }
             }
+            graphics.pop();
             window.requestAnimationFrame(run);
         }
-
-        graphics.translate(TRANSLATE);
         window.requestAnimationFrame(run);
     });
