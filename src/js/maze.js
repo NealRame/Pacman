@@ -1,5 +1,5 @@
 import {chain} from 'underscore';
-import {range} from './functional';
+import {existy, range} from './functional';
 import * as graphics from './graphics';
 import Vector2D from './vector2d';
 
@@ -31,7 +31,21 @@ class Cell {
     }
     neighborTo(direction) {
         if (direction) {
-            return this.maze.cellAt(this.position.add(direction));
+            const pos = this.position.add(direction);
+            let cell = this.maze.cellAt(pos);
+            if (!existy(cell) && this.isOpen()) {
+                cell = {
+                    column: pos.x,
+                    row: pos.y,
+                    position: pos,
+                    neighborTo() {},
+                    reachableNeighborTo() {},
+                    neighborhood() {},
+                    reachableNeighborhood() {},
+                    isOpen() { return true; }
+                };
+            }
+            return cell;
         }
     }
     reachableNeighborTo(direction) {
