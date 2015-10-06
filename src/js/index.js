@@ -1,7 +1,7 @@
+import *  as audio from './audio';
 import * as graphics from './graphics';
 import * as scheduler from './scheduler';
 import {once} from 'underscore' ;
-import audio from './audio';
 import ui, {SCALE, TRANSLATE} from './ui';
 import Game from './game';
 
@@ -49,7 +49,7 @@ function draw(entity) {
 }
 
 document_ready()
-    .then(audio.initialize())
+    .then(audio.initialize)
     .then(() => {
         const game = new Game();
         const init = once(init_game);

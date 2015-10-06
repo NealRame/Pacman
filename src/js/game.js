@@ -1,8 +1,8 @@
 import _ from 'underscore';
+import * as audio from './audio';
 import * as scheduler from './scheduler';
 import {dispatch} from './functional';
 import {EventEmitter} from 'events';
-import audio from './audio';
 import Biscuit from './biscuit';
 import Engine from './game-engine';
 import Ghost from './ghost';
