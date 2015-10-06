@@ -19,6 +19,9 @@
   },
   "homepage": "https://github.com/NealRame/maze-of-shadow#readme",
   "dependencies": {
+    "babel-runtime": "^5.8.25",
+    "browserify": "^11.2.0",
+    "gulp-sourcemaps": "^1.6.0",
     "underscore": "^1.8.3"
   },
   "devDependencies": {
