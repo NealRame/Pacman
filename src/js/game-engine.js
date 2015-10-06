@@ -130,20 +130,9 @@ export default class GameEngine {
         };
 
         this.run = () => {
-            if (!pacman.eaten) {
-                pacman.step();
-            }
+            pacman.step();
             for (let ghost of ghosts) {
-                if (!pacman.eaten) {
-                    ghost.step();
-                }
-                if (pacman.distanceFrom(ghost.position) < .5) {
-                    if (ghost.eatable) {
-                        ghost.eaten = true;
-                    } else if (!(ghost.eaten || pacman.eaten)) {
-                        pacman.eaten = true;
-                    }
-                }
+                ghost.step();
             }
         };
 

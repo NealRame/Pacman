@@ -344,11 +344,25 @@ export default class Game extends EventEmitter {
     }
     run() {
         if (!this.paused) {
-            this.engine.run();
+            if (!this.pacman.eaten) {
+                this.engine.run();
+            }
+            // who eats whom ?
             const pos = this.pacman.position;
+            // resources
             for (let resource of this.resources) {
                 if (pos.equal(resource.position)) {
                     resource.eaten = true;
+                }
+            }
+            // ghosts
+            for (let ghost of this.ghosts) {
+                if (pos.distance(ghost.position) < .1) {
+                    if (ghost.eatable) {
+                        ghost.eaten = true;
+                    } else if (!(ghost.eaten || this.pacman.eaten)) {
+                        this.pacman.eaten = true;
+                    }
                 }
             }
         }
