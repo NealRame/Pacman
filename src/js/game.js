@@ -360,8 +360,10 @@ export default class Game extends EventEmitter {
                 if (pos.distance(ghost.position) < .1) {
                     if (ghost.eatable) {
                         ghost.eaten = true;
+                        audio.trigger('eat-ghost');
                     } else if (!(ghost.eaten || this.pacman.eaten)) {
                         this.pacman.eaten = true;
+                        audio.trigger('die');
                     }
                 }
             }
