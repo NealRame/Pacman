@@ -25,7 +25,8 @@ function init_game(game) {
     game.on('life-count-changed', life_count => ui.lifes = life_count);
     game.on('game-over', () => {
         if (game.lifes < 0) {
-            game.reset();
+            ui.showMessage('Game Over!');
+            scheduler.delay(4000, () => game.reset());
         } else {
             game.levelUp();
         }
@@ -36,9 +37,9 @@ function init_game(game) {
         ui.level = game.level;
         ui.lifes = game.lifes;
         ui.score = game.score;
-        ui.showMessage('Ready');
+        ui.showMessage('Ready!');
     });
-    ui.on('direction-changed', direction => game.engine.updateDirection(direction));
+    // ui.on('direction-changed', direction => game.engine.updateDirection(direction));
     ui.on('toggle-pause', () => game.togglePause());
     ui.on('toggle-sound-mute', () => audio.toggle());
     game.reset();

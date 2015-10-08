@@ -1,16 +1,17 @@
 import _ from 'underscore';
-import * as audio from './audio';
-import * as scheduler from './scheduler';
 import {dispatch} from './functional';
 import {EventEmitter} from 'events';
+import * as audio from './audio';
+import * as scheduler from './scheduler';
 import Biscuit from './biscuit';
 import Engine from './game-engine';
 import Ghost from './ghost';
 import Maze from './maze';
+import MAZE_DATA from './maze-data.json';
 import Pacman from './pacman';
 import Pill from './pill';
+import ui from './ui';
 import Vector2D from './vector2d';
-import MAZE_DATA from './maze-data.json';
 
 const ENTITY_SPEED = 1/10;
 const GAME_MODE_SCATTERING = 0;
@@ -341,6 +342,12 @@ export default class Game extends EventEmitter {
                 : on_ghost_eaten
             );
         }
+
+        ui.on('direction-changed', (direction) => {
+            if (!(this.paused || this.pacman.eaten)) {
+                _engine.updateDirection(direction);
+            }
+        });
     }
     run() {
         if (!this.paused) {
