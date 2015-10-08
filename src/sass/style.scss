@@ -56,18 +56,39 @@ body {
         margin: 0 auto;
         margin-top: 1em;
         width: $ui-area-width;
-        #lifes, #bonus {
-            float: left;
+        color: #fff200;
+        #lifes, #bonus, #sound {
+            display: inline-block;
             overflow: auto;
-            width: $ui-area-width/2;
         }
         #lifes {
+            float: left;
             .life {
-                display: inline-block;
+                float: left;
                 &::before {
                     content: url(images/pacman.png);
                     margin: 4px;
                 }
+            }
+        }
+        #bonus {
+            float: right;
+        }
+        #sound {
+            color: inherit;
+            float: right;
+            padding: 0 .1em;
+            text-decoration: none;
+            &:focus {
+                outline: none;
+            }
+            &::after {
+                content: '\f026';
+                font-family: FontAwesome;
+                font-size: 2em;
+            }
+            &[muted="false"]::after {
+                content: '\f028';
             }
         }
     }
