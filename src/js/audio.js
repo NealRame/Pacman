@@ -1,8 +1,6 @@
-import 'browsernizr/test/audio';
-import 'browsernizr/test/audio/webaudio';
 import {existy} from './functional';
 import {EventEmitter} from 'events';
-import Modernizr from 'browsernizr';
+import Modernizr from './modernizr';
 
 const SOUND_EXTENSION = Modernizr.audio.ogg ? 'ogg' : 'mp3';
 const SOUND_PREFIX = 'assets/sounds/';
@@ -21,7 +19,7 @@ let sound_fx_map;
 let sound_fx_load;
 let sound_fx_muted = !(Modernizr.webaudio || Modernizr.audio);
 
-export let audioEvents = new EventEmitter();
+export let events = new EventEmitter();
 export let trigger;
 export let mute;
 
@@ -73,7 +71,7 @@ if (Modernizr.webaudio) {
                 playing_nodes.delete(source);
             }
         }
-        audioEvents.emit('sound', sound_fx_muted);
+        events.emit('muted', sound_fx_muted);
     };
 } else if (Modernizr.webaudio) {
     sound_fx_load = function([fx, url]) {
@@ -134,10 +132,12 @@ export function initialize() {
     )
     .then((res) => {
         sound_fx_map = new Map(res);
+        events.emit('initialized');
         return true;
     })
     .catch((err) => {
         console.error(err);
+        events.emit('initialized', err);
         return false;
     });
 }
