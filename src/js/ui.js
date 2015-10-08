@@ -1,4 +1,5 @@
 import _ from 'underscore';
+import * as audio from './audio';
 import {canvas} from './graphics';
 import {dispatch} from './functional';
 import {EventEmitter} from 'events';
@@ -40,6 +41,7 @@ const game_lifes_field = document.getElementById('lifes');
 const game_high_score_field = document.getElementById('high-score');
 const game_score_field = document.getElementById('score');
 const game_message_field = document.getElementById('message');
+const game_sound_switch = document.getElementById('sound');
 
 class Ui extends EventEmitter {
     constructor() {
@@ -51,6 +53,19 @@ class Ui extends EventEmitter {
                 ev.preventDefault();
                 ev.stopPropagation();
             }
+        });
+        audio.events.on('initialized', (err) => {
+            if (err) {
+                game_sound_switch.setAttribute('muted', true);
+            } else {
+                game_sound_switch.setAttribute('muted', audio.muted());
+            }
+        });
+        audio.events.on('muted', game_sound_switch.setAttribute.bind(game_sound_switch, 'muted'));
+        game_sound_switch.addEventListener('click', (ev) => {
+            ev.preventDefault();
+            ev.stopPropagation();
+            audio.toggle();
         });
     }
     set lifes(life_count) {
