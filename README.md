@@ -1,1 +1,1 @@
-# maze-of-shadow
+# Pacman
