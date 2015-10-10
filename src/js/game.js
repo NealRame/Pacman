@@ -98,6 +98,7 @@ export default class Game extends EventEmitter {
         let _score = 0;
         let _level = 1;
         let _lifes = 2;
+        let _life_bonus = true;
         let _ghost_points_coefficient = 0;
         let _resources = new Set();
         const _maze = Maze.load(MAZE_DATA);
@@ -250,6 +251,10 @@ export default class Game extends EventEmitter {
         const update_score = (points) => {
             _score += points;
             this.emit('score-changed', _score);
+            if (_score > 9999 && _life_bonus) {
+                _life_bonus = false;
+                update_life(1);
+            }
             if (_score > _high_score) {
                 _high_score = _score;
                 this.emit('high-score-changed', _high_score);
@@ -331,6 +336,7 @@ export default class Game extends EventEmitter {
                         _score = 0;
                         _level = 1;
                         _lifes = 2;
+                        _life_bonus = true;
                     }
                     _resources = init_resources(on_resource_eaten);
                 }
