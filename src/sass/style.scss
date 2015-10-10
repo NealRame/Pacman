@@ -89,10 +89,10 @@ body {
         }
         #sound {
             &::after {
-                content: 'm';
+                content: 'M';
             }
             &[muted="false"]::after {
-                content: 'M';
+                content: 'm';
             }
         }
         #github {
