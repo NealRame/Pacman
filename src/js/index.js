@@ -26,12 +26,13 @@ function init_game(game) {
     game.on('game-over', () => {
         if (game.lifes < 0) {
             ui.showMessage('Game Over!');
-            scheduler.delay(4000, () => game.reset());
+            scheduler.delay(4000, () => game.stop());
         } else {
             game.levelUp();
         }
     });
     game.on('game-started', () => ui.hideMessage());
+    game.on('game-stopped', () => ui.showMessage(`Push 'S' to start a new game.`));
     game.on('reset', () => {
         ui.highScore = game.highScore;
         ui.level = game.level;
@@ -39,9 +40,9 @@ function init_game(game) {
         ui.score = game.score;
         ui.showMessage('Ready!');
     });
-    // ui.on('direction-changed', direction => game.engine.updateDirection(direction));
     ui.on('toggle-pause', () => game.togglePause());
     ui.on('toggle-sound-mute', () => audio.toggle());
+    ui.on('start', () => game.start());
     game.reset();
 }
 
@@ -63,7 +64,7 @@ document_ready()
             graphics.push();
             graphics.translate(TRANSLATE);
             draw(game.maze);
-            if (!game.paused) {
+            if (game.started && !game.paused) {
                 for (let drawable of [...game.resources, ...game.ghosts, game.pacman]) {
                     draw(drawable);
                 }

@@ -18,6 +18,7 @@ const KEY_RIGHT = 39;
 const KEY_DOWN = 40;
 const KEY_M = 77;
 const KEY_P = 80;
+const KEY_S = 83;
 
 function create_life_elements(count) {
     return _(Math.max(count, 0)).times(() => {
@@ -33,7 +34,8 @@ const key_to_event = dispatch(
     key_code => key_code === KEY_UP ?    ['direction-changed', Vector2D.NORTH] : null,
     key_code => key_code === KEY_DOWN ?  ['direction-changed', Vector2D.SOUTH] : null,
     key_code => key_code === KEY_M ?     ['toggle-sound-mute'] : null,
-    key_code => key_code === KEY_P ?     ['toggle-pause'] : null
+    key_code => key_code === KEY_P ?     ['toggle-pause'] : null,
+    key_code => key_code === KEY_S ?     ['start']   : null
 );
 
 const game_level_field = document.getElementById('level');

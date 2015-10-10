@@ -90,6 +90,7 @@ export default class Game extends EventEmitter {
     constructor() {
         super();
         /* eslint-disable no-underscore-dangle */
+        let _game_started = false;
         let _game_over = true;
         let _paused = false;
         let _mode = GAME_MODE_SCATTERING;
@@ -98,7 +99,7 @@ export default class Game extends EventEmitter {
         let _level = 1;
         let _lifes = 2;
         let _ghost_points_coefficient = 0;
-        let _resources;
+        let _resources = new Set();
         const _maze = Maze.load(MAZE_DATA);
         const _pacman = new Pacman(
             'pacman',
@@ -162,6 +163,16 @@ export default class Game extends EventEmitter {
         );
         const _engine = new Engine(_maze, _pacman, [_blinky, _pinky, _inky, _clyde]);
         /* eslint-enable-line no-underscore-dangle */
+
+        Object.defineProperty(this, 'started', {
+            enumerable: true,
+            get: () => _game_started
+        });
+
+        Object.defineProperty(this, 'gameOver', {
+            enumerable: true,
+            get: () => _game_over
+        });
 
         Object.defineProperty(this, 'maze', {
             enumerable: true,
@@ -313,27 +324,47 @@ export default class Game extends EventEmitter {
         };
 
         this.reset = () => {
-            if (_game_over) {
-                _game_over = false;
-                if (_lifes < 0) {
-                    _score = 0;
-                    _level = 1;
-                    _lifes = 2;
+            if (_game_started) {
+                if (_game_over) {
+                    _game_over = false;
+                    if (_lifes < 0) {
+                        _score = 0;
+                        _level = 1;
+                        _lifes = 2;
+                    }
+                    _resources = init_resources(on_resource_eaten);
                 }
-                _resources = init_resources(on_resource_eaten);
-            }
-            scheduler.cancelAll();
-            audio.trigger('opening-song');
-            scheduler.delay(4000, game_start);
-            for (let entity of [...this.ghosts, _pacman]) {
-                entity.reset();
-                if (entity !== _pacman) {
-                    entity.destination = entity.position.add({x: .5, y: 0});
-                    entity.position = entity.destination;
+                scheduler.cancelAll();
+                audio.trigger('opening-song');
+                scheduler.delay(4000, game_start);
+                for (let entity of [...this.ghosts, _pacman]) {
+                    entity.reset();
+                    if (entity !== _pacman) {
+                        entity.destination = entity.position.add({x: .5, y: 0});
+                        entity.position = entity.destination;
+                    }
                 }
+                enter_scatter_mode();
+                this.emit('reset');
+            } else {
+                _game_over = true;
+                _resources = new Set();
+                this.emit('game-stopped');
             }
-            enter_scatter_mode();
-            this.emit('reset');
+        };
+
+        this.start = () => {
+            if (!_game_started) {
+                _game_started = true;
+                this.reset();
+            }
+        };
+
+        this.stop = () => {
+            if (_game_started) {
+                _game_started = false;
+                this.reset();
+            }
         };
 
         for (let entity of [_pacman, ...this.ghosts]) {
@@ -350,7 +381,7 @@ export default class Game extends EventEmitter {
         });
     }
     run() {
-        if (!this.paused) {
+        if (this.started && !this.paused) {
             if (!this.pacman.eaten) {
                 this.engine.run();
             }
