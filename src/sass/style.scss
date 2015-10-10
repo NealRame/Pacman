@@ -1,15 +1,19 @@
+@import "nr_pacman_font";
+
 $body-bg-color: #060e1a;
+$score-font-color: #e4e4f4;
 $ui-area-width: 480px;
+$pacman-yellow: #fff200;
 
 body {
     background-color: $body-bg-color;
-    color: #e4e4f4;
     font-family: 'VT323', ;
     margin: 0;
 }
 #game {
     position: relative;
     #scores-area {
+        color: $score-font-color;
         margin: 0 auto;
         margin-bottom: 1em;
         overflow: auto;
@@ -34,7 +38,7 @@ body {
         margin: 0 auto;
     }
     #message {
-        color: #fff200;
+        color: $pacman-yellow;
         font-size: 2em;
         opacity: 0;
         position: absolute;
@@ -56,39 +60,47 @@ body {
         margin: 0 auto;
         margin-top: 1em;
         width: $ui-area-width;
-        color: #fff200;
-        #lifes, #bonus, #sound {
-            display: inline-block;
+        color: $pacman-yellow;
+        #lifes, #bonus, #github, #sound {
+            float: right;
+            font-family: NRPacmanUI;
+            font-size: 3em;
             overflow: auto;
+            text-align: center;
         }
         #lifes {
             float: left;
+            overflow: auto;
             .life {
                 float: left;
-                &::before {
-                    content: url(images/pacman.png);
-                    margin: 4px;
+                padding: 0 .1em;
+                &::after {
+                    content: 'p';
                 }
             }
         }
-        #bonus {
-            float: right;
-        }
-        #sound {
+        #sound, #github {
             color: inherit;
-            float: right;
             padding: 0 .1em;
             text-decoration: none;
             &:focus {
                 outline: none;
             }
+        }
+        #sound {
             &::after {
-                content: '\f026';
-                font-family: FontAwesome;
-                font-size: 2em;
+                content: 'm';
             }
             &[muted="false"]::after {
-                content: '\f028';
+                content: 'M';
+            }
+        }
+        #github {
+            &:focus {
+                outline: none;
+            }
+            &::after {
+                content: 'g';
             }
         }
     }
